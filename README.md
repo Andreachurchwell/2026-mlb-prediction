@@ -389,7 +389,7 @@ A simplified view:
 Clone the repository and move into the project directory:
 
 ``` bash
-git clone <YOUR-REPOSITORY-URL>
+git clone https://github.com/Andreachurchwell/2026-mlb-prediction
 cd 2026-mlb-prediction
 ```
 
