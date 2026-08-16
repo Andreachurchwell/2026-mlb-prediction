@@ -1,0 +1,424 @@
+OCTOBER SHIFT - PROJECT NOTES Last updated: August 16, 2026
+
+WHAT THIS PROJECT IS
+
+October Shift is my 2026 MLB project for looking at which teams seem
+strongest for a World Series run.
+
+I did not want it to just rank teams by wins and losses. The idea is to
+look at things like how a team is playing later in the season, run
+differential, who they have beaten, and especially how strong their
+starting rotation could be in October.
+
+WHAT WE HAVE DONE
+
+1.  PULLED THE 2026 MLB GAME DATA
+
+We made fetch_data.py.
+
+It pulled all completed 2026 MLB games through August 16.
+
+At the time we stopped, we had: - 1,855 completed games - All 30 MLB
+teams - Dates from March 25 through August 16 - Home and away teams -
+Scores - Winners
+
+The raw game data is saved in: data/raw/games_2026.csv
+
+2.  CHECKED THE DATA
+
+We made inspect_data.py.
+
+We checked: - Missing values - Duplicate game IDs - Number of teams -
+Date range - Sample games
+
+The data looked clean.
+
+3.  BUILT TEAM STATS
+
+We made build_team_stats.py.
+
+This gave us things like: - Wins and losses - Normal win percentage -
+Pre-All-Star win percentage - Post-All-Star win percentage - Last 10 win
+percentage - Weighted win percentage - Run differential
+
+4.  ADDED TEAM-LEVEL FEATURES
+
+We made build_features.py.
+
+We added things like: - Strength of schedule - Quality wins - Run
+differential - Weighted team performance
+
+We also tried giving more credit for beating better teams.
+
+5.  BUILT TRAINING DATA
+
+We made build_training_data.py.
+
+Important: the features for a game only use information that was
+available BEFORE that game. This was done so the model would not
+accidentally use future information.
+
+We ended up with 1,703 training examples.
+
+6.  TESTED AN XGBOOST GAME PREDICTION MODEL
+
+Our first XGBoost model was not very good.
+
+First test: - Model accuracy: about 48.8% - Home-team baseline: about
+54.7%
+
+So we did NOT pretend it was good. We started testing different feature
+combinations.
+
+7.  COMPARED DIFFERENT TEAM MODELS
+
+We made compare_models.py.
+
+The best simple version was basically recent team performance + run
+differential.
+
+On the August test set it got: - Accuracy: about 57.6% - ROC AUC: about
+0.563 - Baseline: about 54.7%
+
+The more complicated versions were not automatically better.
+
+This was an important lesson from the project.
+
+8.  PULLED PITCH-BY-PITCH DATA
+
+We made fetch_pitching.py using Statcast/pybaseball.
+
+It downloaded: - 546,373 pitches
+
+Saved in: data/raw/pitching_2026.csv
+
+9.  FOUND THE STARTING PITCHERS
+
+We made build_pitcher_starts.py.
+
+It matched the starting pitchers to the games.
+
+Saved in: data/processed/pitcher_starts_2026.csv
+
+10. BUILT PITCHER FEATURES
+
+We made build_pitcher_features.py.
+
+We tried things like: - Strikeout rate - Walk rate - Baserunner rate -
+Season pitching performance - Recent pitching performance
+
+These did NOT improve the single-game model.
+
+The team-only model still did better.
+
+11. TESTED STARTER WIN/LOSS TYPE RECORDS
+
+We made build_starter_records.py and compare_starter_record_models.py.
+
+We tested whether the team winning more often when a certain pitcher
+started would help.
+
+It did not beat the team-only model.
+
+12. BUILT OUR OWN STARTER RUN SCORE
+
+We wanted something easier to understand than a bunch of pitching stats.
+
+We made build_starter_run_scores.py.
+
+The idea was basically: - A starter who usually allows very few runs
+gets a better score. - A starter who gives up more runs gets a worse
+score.
+
+We tested season and recent versions.
+
+Recent starter run score helped ROC AUC a little in one test, but it did
+not consistently beat the team model.
+
+13. VALIDATED THE MODEL OVER DIFFERENT TIME WINDOWS
+
+We made validate_over_time.py.
+
+This was important because one good August test could have just been
+luck.
+
+The results showed that: - Sometimes pitching helped. - Sometimes
+team-only was better. - Neither model was consistently great at
+predicting individual MLB games.
+
+So we stopped trying to force pitching into the single-game prediction
+model.
+
+14. CHANGED THE MAIN IDEA INTO A WORLD SERIES CONTENDER BOARD
+
+Instead of pretending we had an amazing daily game predictor, we started
+building a contender ranking.
+
+This became OCTOBER SHIFT.
+
+The goal is now more like:
+
+“Based on what has happened in 2026, which teams look built for
+October?”
+
+15. BUILT THE FIRST CONTENDER BOARD
+
+We made build_contender_board.py.
+
+It ranked all 30 teams using several things instead of just record.
+
+16. REALIZED PITCHING NEEDED TO MATTER MORE
+
+The first pitching score was too simple.
+
+We talked about how playoff baseball is different because a team with 3
+or 4 really good starters can be much more dangerous than a team with
+only one ace.
+
+We also did NOT want to punish a great pitcher just because he had
+recently been on the injured list.
+
+That is especially important for teams like the Dodgers.
+
+17. BUILT A POSTSEASON ROTATION SCORE
+
+We made build_rotation_scores.py.
+
+The first version had a problem: - It could treat relievers/openers like
+aces.
+
+We fixed that.
+
+The current version: - Requires at least 5 starts - Requires about 50+
+pitches per start on average - Uses a reliability adjustment so 5 good
+starts do not automatically mean more than 20 good starts - Does NOT
+care how recently the pitcher pitched - Ranks a team’s best starters -
+Rewards teams that have several strong starters
+
+The rotation score uses: - Ace strength - Top 3 starter strength - Top 4
+starter strength - Rotation depth
+
+This is meant to represent a team’s POSTSEASON ROTATION CEILING.
+
+It is NOT saying every pitcher is guaranteed to be healthy in October.
+
+18. CURRENT TOP ROTATIONS
+
+When we stopped, the top rotations were:
+
+1.  Milwaukee Brewers
+2.  Los Angeles Dodgers
+3.  Atlanta Braves
+4.  Chicago Cubs
+5.  Boston Red Sox
+6.  San Diego Padres
+7.  Tampa Bay Rays
+8.  Arizona Diamondbacks
+9.  St. Louis Cardinals
+10. Detroit Tigers
+
+The Dodgers top four in our data were: - Shohei Ohtani - Tarik Skubal -
+Yoshinobu Yamamoto - Tyler Glasnow
+
+This was much closer to the type of pitching measurement I wanted.
+
+19. UPDATED THE OCTOBER SHIFT FORMULA
+
+The current October Shift score is:
+
+25% Postseason Rotation 20% Run Differential 20% Post-All-Star
+Performance 15% Last 10 Games 10% Quality-Adjusted Performance 10%
+Overall Record
+
+We decided to stop changing these weights for now instead of constantly
+changing the formula based on whether we liked a team’s ranking.
+
+20. CURRENT OCTOBER SHIFT TOP 10
+
+When we stopped on August 16:
+
+1.  Milwaukee Brewers - 88.2
+
+2.  Chicago Cubs - 84.7
+
+3.  Atlanta Braves - 79.8
+
+4.  Tampa Bay Rays - 79.4
+
+5.  Los Angeles Dodgers - 74.3
+
+6.  San Diego Padres - 72.7
+
+7.  Boston Red Sox - 70.2
+
+8.  Arizona Diamondbacks - 67.4
+
+9.  New York Yankees - 63.1
+
+10. Detroit Tigers - 63.0
+
+11. BUILT THE STREAMLIT APP
+
+The project has a Streamlit dashboard called October Shift.
+
+We worked on giving it a different tech-style look instead of a normal
+plain Streamlit dashboard.
+
+We also added MLB team logos.
+
+The app is supposed to show the contender board and let us look deeper
+at individual teams.
+
+WHAT STILL NEEDS TO BE DONE
+
+1.  UPDATE/CHECK THE APP
+
+Make sure the current app is actually showing the NEW rotation
+information.
+
+The old “recent starter score” should be replaced with things like: -
+Postseason Rotation Rank - Rotation Score - Ace - Top 3 Score - Top 4
+Score - Top 4 starter names
+
+2.  MAKE SURE THE APP EXPLAINS THE SCORE
+
+Somebody looking at this for the first time needs to understand why a
+team is ranked where it is.
+
+The app should clearly show the current weights:
+
+25% Postseason Rotation 20% Run Differential 20% Post-All-Star
+Performance 15% Last 10 10% Quality-Adjusted Performance 10% Overall
+Record
+
+3.  ADD PITCHER AVAILABILITY LATER
+
+Right now the rotation score is a ceiling.
+
+A pitcher can still count even if he is currently injured because I did
+not want an injured ace to suddenly be treated like a bad pitcher.
+
+Later we may want a SEPARATE availability/injury status.
+
+Something like: - Rotation Ceiling - Current Availability
+
+Do NOT mix these together without thinking it through first.
+
+4.  MAYBE ADD VEGAS / MARKET COMPARISON
+
+We talked about comparing October Shift rankings with World Series
+betting favorites.
+
+This could show teams where my model disagrees with the market.
+
+Example idea:
+
+October Shift Rank: #2 Market Rank: #7 Market Gap: +5 Model says:
+Undervalued
+
+This has NOT been built yet.
+
+If we do this, the odds/ranks should be pulled from a real current
+source instead of manually hard-coded.
+
+5.  AUTOMATIC DATA UPDATES
+
+Right now I manually run the scripts.
+
+Eventually it would be nice to have an update process that: - Pulls new
+completed games - Pulls new pitching data - Rebuilds starter
+information - Rebuilds rotation scores - Rebuilds October Shift rankings
+
+This needs to be done carefully so we do not keep downloading the entire
+season for no reason.
+
+6.  SAVE RANKING HISTORY
+
+Right now we mostly have the current ranking.
+
+It would be cool to save each day’s October Shift rankings so the app
+could show:
+
+Brewers Aug 1: #4 Aug 8: #2 Aug 16: #1
+
+That would make the “Shift” part of October Shift mean more.
+
+7.  TEST THE CONTENDER FORMULA OVER TIME
+
+The contender board is NOT the same thing as the game prediction model.
+
+Eventually we should test whether teams that score higher in October
+Shift actually perform better later.
+
+For now, be honest that it is a contender scoring system, not a proven
+World Series probability model.
+
+8.  CLEAN UP OLD FILES LATER
+
+There are several experiment scripts now.
+
+Do NOT delete them yet.
+
+Some of them show the process of what we tried and what failed, which is
+actually useful for the project.
+
+Later we can organize them into something like: - src/ - experiments/ -
+data/ - models/
+
+9.  README
+
+We still need a good GitHub README.
+
+It should explain: - What October Shift is - Why I made it - Where the
+data comes from - What the score means - How the rotation score works -
+What experiments failed - How to run the project - Screenshots of the
+app - Limitations
+
+Keep it honest. Do not claim the model predicts the World Series winner.
+
+10. GITHUB CLEANUP
+
+Before calling the project finished: - Check .gitignore - Make sure venv
+is ignored - Decide whether the huge raw pitching CSV should be
+committed - Remove junk/temp files - Make sure requirements.txt is
+correct - Make sure a new person can run the project
+
+IMPORTANT THINGS TO REMEMBER NEXT TIME
+
+-   Do not start over.
+-   The current contender formula is already working.
+-   Do not keep changing weights just because one ranking looks weird.
+-   The single-game model was NOT very strong, and that is okay.
+-   Recent + run differential was the best team-only game model we
+    tested.
+-   Pitching did not consistently improve individual game prediction.
+-   Pitching DOES have a useful place in the postseason contender model.
+-   The new postseason rotation score is the pitching feature we
+    currently like.
+-   It rewards teams with 3-4 strong starters.
+-   It uses starter workload to filter out openers.
+-   It uses reliability adjustment for small samples.
+-   It does not automatically punish pitchers for not pitching recently.
+-   Rotation score means ceiling, not guaranteed health/availability.
+-   October Shift is a contender ranking, not a guaranteed prediction.
+
+WHERE TO START NEXT TIME
+
+Do NOT build another model first.
+
+Start by opening the Streamlit app and checking that the new postseason
+rotation information is displayed correctly.
+
+Run:
+
+streamlit run app.py
+
+Then check: 1. Milwaukee 2. Dodgers 3. Cubs 4. Braves
+
+Make sure their rotation rank, top starters, and October Shift score all
+look right.
+
+After that, decide whether to work on: - the app display, - ranking
+history, - Vegas comparison, - automatic updates, or the README.
+
+That is where we stopped.
