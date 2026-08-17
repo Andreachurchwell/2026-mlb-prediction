@@ -47,6 +47,13 @@ def main():
         "balls",
         "strikes",
         "outs_when_up",
+        "on_1b",
+        "on_2b",
+        "on_3b",
+        "bat_score",
+        "fld_score",
+        "post_bat_score",
+        "post_fld_score",
         "post_away_score",
         "post_home_score"
     ]

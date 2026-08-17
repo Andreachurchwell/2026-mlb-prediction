@@ -3,6 +3,10 @@ from pathlib import Path
 import pandas as pd
 
 
+# =========================================================
+# PATHS
+# =========================================================
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 GAMES_FILE = (
@@ -19,6 +23,13 @@ ROTATION_FILE = (
     / "projected_rotations_2026.csv"
 )
 
+BULLPEN_FILE = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "bullpen_scores_2026.csv"
+)
+
 OUTPUT_FILE = (
     PROJECT_ROOT
     / "data"
@@ -26,6 +37,10 @@ OUTPUT_FILE = (
     / "contender_scores_2026.csv"
 )
 
+
+# =========================================================
+# SETTINGS
+# =========================================================
 
 ALL_STAR_DATE = pd.Timestamp("2026-07-14")
 
@@ -36,8 +51,26 @@ POST_ASB_WEIGHT = 1.0
 # =========================================================
 # OCTOBER SHIFT SCORE WEIGHTS
 # =========================================================
+#
+# Pitching = 25% total
+#
+# Starting rotation:        20%
+# Bullpen:                   5%
+#
+# Team performance = 75%
+#
+# Run differential:        20%
+# Post-ASB performance:    20%
+# Last 10 games:           15%
+# Quality-weighted wins:   10%
+# Overall record:          10%
+#
+# TOTAL:                   100%
+# =========================================================
 
-ROTATION_WEIGHT = 0.25
+ROTATION_WEIGHT = 0.20
+BULLPEN_WEIGHT = 0.05
+
 RUN_DIFF_WEIGHT = 0.20
 POST_ASB_WEIGHT_SCORE = 0.20
 LAST_10_WEIGHT = 0.15
@@ -76,6 +109,15 @@ def load_rotation_scores():
     )
 
     return rotation
+
+
+def load_bullpen_scores():
+
+    bullpen = pd.read_csv(
+        BULLPEN_FILE
+    )
+
+    return bullpen
 
 
 # =========================================================
@@ -266,11 +308,13 @@ def build_team_metrics(games):
         if game["date"] > ALL_STAR_DATE:
 
             home["post_asb_games"] += 1
+
             home["post_asb_wins"] += (
                 home_win
             )
 
             away["post_asb_games"] += 1
+
             away["post_asb_wins"] += (
                 away_win
             )
@@ -365,7 +409,7 @@ def normalize(series):
     if maximum == minimum:
 
         return pd.Series(
-            50,
+            50.0,
             index=series.index,
         )
 
@@ -388,7 +432,12 @@ def normalize(series):
 def build_contender_scores(
     team_metrics,
     rotation_scores,
+    bullpen_scores,
 ):
+
+    # --------------------------------
+    # MERGE ROTATION
+    # --------------------------------
 
     df = team_metrics.merge(
         rotation_scores,
@@ -397,7 +446,32 @@ def build_contender_scores(
     )
 
     # --------------------------------
-    # HANDLE ANY MISSING ROTATION DATA
+    # MERGE BULLPEN
+    # --------------------------------
+
+    bullpen_columns = [
+        "team",
+        "bullpen_rank",
+        "best_reliever",
+        "best_reliever_score",
+        "top_3_run_prevention",
+        "top_5_run_prevention",
+        "strand_rate",
+        "strand_score",
+        "qualified_relievers",
+        "neutral_bullpen_score",
+    ]
+
+    df = df.merge(
+        bullpen_scores[
+            bullpen_columns
+        ],
+        on="team",
+        how="left",
+    )
+
+    # --------------------------------
+    # HANDLE MISSING ROTATION DATA
     # --------------------------------
 
     rotation_median = (
@@ -418,14 +492,44 @@ def build_contender_scores(
         )
     )
 
-    # =================================
+    # --------------------------------
+    # HANDLE MISSING BULLPEN DATA
+    # --------------------------------
+
+    bullpen_median = (
+        df[
+            "neutral_bullpen_score"
+        ]
+        .median()
+    )
+
+    df[
+        "neutral_bullpen_score"
+    ] = (
+        df[
+            "neutral_bullpen_score"
+        ]
+        .fillna(
+            bullpen_median
+        )
+    )
+
+    # =====================================================
     # NORMALIZED COMPONENT SCORES
-    # =================================
+    # =====================================================
 
     df["rotation_component"] = (
         normalize(
             df[
                 "projected_rotation_score"
+            ]
+        )
+    )
+
+    df["bullpen_component"] = (
+        normalize(
+            df[
+                "neutral_bullpen_score"
             ]
         )
     )
@@ -470,14 +574,30 @@ def build_contender_scores(
         )
     )
 
-    # =================================
+    # =====================================================
     # FINAL OCTOBER SHIFT SCORE
-    # =================================
+    # =====================================================
+    #
+    # 20% Starting Rotation
+    #  5% Bullpen
+    # 20% Run Differential
+    # 20% Post-ASB Performance
+    # 15% Last 10 Games
+    # 10% Quality-Weighted Wins
+    # 10% Overall Record
+    #
+    # TOTAL = 100%
+    # =====================================================
 
     df["october_shift_score"] = (
 
         df["rotation_component"]
         * ROTATION_WEIGHT
+
+        +
+
+        df["bullpen_component"]
+        * BULLPEN_WEIGHT
 
         +
 
@@ -505,13 +625,16 @@ def build_contender_scores(
         * OVERALL_RECORD_WEIGHT
     )
 
-    # Keep contender_score too so the
-    # existing Streamlit app does not
-    # immediately break.
+    # Keep contender_score for compatibility
+    # with the Streamlit application.
 
     df["contender_score"] = (
         df["october_shift_score"]
     )
+
+    # --------------------------------
+    # SORT + RANK
+    # --------------------------------
 
     df = (
         df
@@ -544,11 +667,19 @@ def main():
         "Building October Shift..."
     )
 
+    # --------------------------------
+    # GAMES
+    # --------------------------------
+
     games = load_games()
 
     print(
         f"Loaded {len(games):,} games."
     )
+
+    # --------------------------------
+    # ROTATIONS
+    # --------------------------------
 
     rotation_scores = (
         load_rotation_scores()
@@ -559,18 +690,44 @@ def main():
         f"for {len(rotation_scores):,} teams."
     )
 
+    # --------------------------------
+    # BULLPENS
+    # --------------------------------
+
+    bullpen_scores = (
+        load_bullpen_scores()
+    )
+
+    print(
+        f"Loaded bullpen scores "
+        f"for {len(bullpen_scores):,} teams."
+    )
+
+    # --------------------------------
+    # TEAM METRICS
+    # --------------------------------
+
     team_metrics = (
         build_team_metrics(
             games
         )
     )
 
+    # --------------------------------
+    # FINAL BOARD
+    # --------------------------------
+
     board = (
         build_contender_scores(
             team_metrics,
             rotation_scores,
+            bullpen_scores,
         )
     )
+
+    # --------------------------------
+    # SAVE
+    # --------------------------------
 
     OUTPUT_FILE.parent.mkdir(
         parents=True,
@@ -581,6 +738,10 @@ def main():
         OUTPUT_FILE,
         index=False,
     )
+
+    # =====================================================
+    # MAIN CONTENDER BOARD
+    # =====================================================
 
     print(
         "\nOCTOBER SHIFT // "
@@ -597,7 +758,9 @@ def main():
         "run_diff_per_game",
         "quality_weighted_win_pct",
         "projected_rotation_rank",
+        "bullpen_rank",
         "projected_rotation_score",
+        "neutral_bullpen_score",
         "october_shift_score",
     ]
 
@@ -610,6 +773,10 @@ def main():
             index=False
         )
     )
+
+    # =====================================================
+    # TOP ROTATIONS
+    # =====================================================
 
     print(
         "\nTOP ROTATIONS IN CONTENDER BOARD\n"
@@ -636,6 +803,78 @@ def main():
         .to_string(
             index=False
         )
+    )
+
+    # =====================================================
+    # TOP BULLPENS
+    # =====================================================
+
+    print(
+        "\nTOP BULLPENS IN CONTENDER BOARD\n"
+    )
+
+    bullpen_display = [
+        "team",
+        "bullpen_rank",
+        "best_reliever",
+        "top_3_run_prevention",
+        "top_5_run_prevention",
+        "strand_rate",
+        "qualified_relievers",
+        "neutral_bullpen_score",
+    ]
+
+    print(
+        board[
+            bullpen_display
+        ]
+        .sort_values(
+            "bullpen_rank"
+        )
+        .head(10)
+        .to_string(
+            index=False
+        )
+    )
+
+    # =====================================================
+    # MODEL WEIGHTS
+    # =====================================================
+
+    print(
+        "\nOCTOBER SHIFT MODEL WEIGHTS\n"
+    )
+
+    print(
+        "Starting Rotation:      20%"
+    )
+
+    print(
+        "Bullpen:                 5%"
+    )
+
+    print(
+        "Run Differential:       20%"
+    )
+
+    print(
+        "Post-ASB Performance:   20%"
+    )
+
+    print(
+        "Last 10 Games:          15%"
+    )
+
+    print(
+        "Quality-Weighted Wins:  10%"
+    )
+
+    print(
+        "Overall Record:         10%"
+    )
+
+    print(
+        "\nTOTAL:                  100%"
     )
 
     print(

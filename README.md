@@ -1,385 +1,307 @@
 # October Shift
 
-**A live 2026 MLB contender-ranking project built around one question: which teams look built for October?**
+**A live 2026 MLB contender-ranking project built around one question:
+which teams look built for October?**
 
-October Shift is a Python + Streamlit sports analytics project that ranks all 30 MLB teams using current 2026 results, Statcast pitching data, opponent quality, recent form, run differential, and a custom postseason rotation model.
+October Shift is a Python + Streamlit sports analytics project that
+ranks all 30 MLB teams using current results, recent form, run
+differential, opponent-adjusted performance, projected postseason
+starting rotations, and bullpen performance.
 
-The project did not start this way. I originally tried to build a single-game MLB prediction model. I tested team features, recent performance, starting-pitcher records, run-based starter scores, and several pitching combinations. The more complicated models did not consistently beat the simpler team baseline.
+The project originally started as a single-game prediction experiment. I
+tested team features, recent performance, starting-pitcher records,
+run-based starter scores, and several pitching combinations. The more
+complicated models did not consistently beat the simpler team baseline,
+so I changed the question instead of forcing a prediction model that the
+results did not support.
 
-Instead of forcing a weak prediction model, I changed the question.
+> **October Shift is a contender-ranking system, not a World Series
+> probability model.**
 
-> **October Shift is a contender-ranking system, not a World Series probability model.**
+A score of 82 does not mean an 82% chance to win the World Series. It is
+a relative score used to compare the current profiles of all 30 teams.
 
-A score of 84 does **not** mean an 84% chance to win the World Series. It is a relative score used to compare the current profiles of all 30 teams.
-
----
+------------------------------------------------------------------------
 
 ## Current October Shift Formula
 
-The contender score combines six normalized components:
+  Component                          Weight
+  ------------------------------ ----------
+  Starting Rotation                     20%
+  Bullpen                                5%
+  Run Differential                      20%
+  Post-All-Star Performance             20%
+  Last 10 Games                         15%
+  Quality-Adjusted Performance          10%
+  Overall Record                        10%
+  **Total**                        **100%**
 
-| Component | Weight |
-|---|---:|
-| Projected Postseason Rotation | 25% |
-| Run Differential | 20% |
-| Post-All-Star Performance | 20% |
-| Last 10 Games | 15% |
-| Quality-Adjusted Performance | 10% |
-| Overall Record | 10% |
+The weights are intentionally being kept fixed for now. I do not want to
+keep changing the formula just because I dislike where one team ranks.
 
-Each component is normalized across MLB before the final weighted score is calculated.
+------------------------------------------------------------------------
 
-The weights are intentionally being kept fixed for now. I do not want to keep changing the formula just because I dislike where one team ranks.
+## Starting Rotation Model
 
----
+October Shift builds a projected four-man postseason rotation for each
+team. The rotation model is meant to reward teams that can stack several
+strong starters instead of overvaluing a club with one ace and a large
+drop-off behind him.
 
-## Why Starting Pitching Became Its Own Model
+Starter scoring uses run suppression and quality/deep-start performance,
+along with workload requirements and reliability adjustments to keep
+short openers and tiny samples from taking over the rankings.
 
-Starting pitching did not consistently improve the single-game prediction experiments, but that did not make it irrelevant.
+The rotation output includes projected rotation rank, projected ace, ace
+score, top-three score, top-four score, depth score, overall rotation
+score, and the projected four-man rotation.
 
-The postseason question is different.
+The rotation score should be read as a **postseason rotation ceiling**.
+It does not guarantee that every pitcher will be healthy, active, or
+used as a starter in October.
 
-A team with one excellent starter and a large drop-off behind him should not automatically be treated the same as a team that can bring three or four strong starters into a short playoff series.
+------------------------------------------------------------------------
 
-That led to a separate **Projected Postseason Rotation** system.
+## Bullpen Model
 
-### Starter qualification
+Bullpen strength is now modeled separately from the starting rotation.
 
-To avoid treating short openers or tiny samples like established starters, the current projected rotation pool requires:
+The bullpen pipeline uses actual relief appearances and run prevention,
+then looks at the strength of the best relievers as a group. It also
+tracks inherited runners because escaping another pitcher's jam matters
+in a postseason bullpen.
 
-- At least **5 starts**
-- At least **50 pitches per start on average**
+Current bullpen output includes:
 
-A reliability adjustment also pulls smaller samples toward the qualified-starter league average.
+-   Bullpen rank
+-   Best reliever
+-   Top-three run-prevention score
+-   Top-five run-prevention score
+-   Qualified reliever count
+-   Inherited runners, scored and stranded
+-   Strand rate
+-   Neutral bullpen score
 
-That means five good starts still count, but they are not treated as equally trustworthy as twenty-five good starts.
+Smaller samples are adjusted so a few appearances do not automatically
+dominate the ranking.
 
----
+------------------------------------------------------------------------
 
-## Individual Starter Score
+## Dashboard
 
-Qualified starters are evaluated using two ideas that survived the pitching experiments:
+The Streamlit app is now a multi-page dashboard rather than one long
+report.
 
-| Starter Component | Weight |
-|---|---:|
-| Run Suppression | 60% |
-| Quality / Deep-Start Performance | 40% |
+-   **Home** --- project overview and top contenders
+-   **Rankings** --- full contender board
+-   **Teams** --- individual team deep scans
+-   **Rotations** --- projected postseason rotations with pitcher
+    headshots
+-   **Bullpens** --- bullpen rankings and reliever detail
+-   **Movement** --- changes between saved ranking snapshots
+-   **Model** --- plain-language explanation of the score and weights
 
-### Run suppression
+The interface uses MLB team logos and player headshots where available
+and has been worked on for desktop and smaller screens.
 
-This measures how well a starter has kept runs off the board in his 2026 starts.
+------------------------------------------------------------------------
 
-### Quality / deep-start performance
+## Ranking History and Movement
 
-This adds information about whether the pitcher is also giving his team meaningful length.
+October Shift saves dated ranking snapshots in:
 
-The project uses a quality-start-style proxy built from Statcast pitch data and starter game lines. It rewards starts that reach at least six innings while allowing no more than three runs.
-
-This is not intended to replace official pitching statistics. It is a feature designed for this project.
-
----
-
-## Projected Postseason Rotation Score
-
-After the individual starter scores are built, October Shift selects one shared projected top four for each team.
-
-The **same four pitchers** are then used throughout the team rotation calculation.
-
-The team rotation score is:
-
-| Rotation Component | Weight |
-|---|---:|
-| Top 3 Average | 40% |
-| Ace Strength | 25% |
-| Top 4 Average | 20% |
-| #3 / #4 Depth | 15% |
-
-This structure is meant to reward teams that can stack multiple strong starters instead of overvaluing a team with only one ace.
-
-The current rotation score should be read as a **postseason rotation ceiling**.
-
-It does not guarantee that every pitcher will be healthy, active, or used as a starter in October. Availability and injury status are intentionally separate problems.
-
----
-
-## What the Dashboard Shows
-
-The Streamlit dashboard includes:
-
-- All 30 October Shift rankings
-- Overall contender rank
-- October Shift score
-- Post-All-Star performance
-- Last-10 performance
-- Run differential per game
-- Quality-adjusted win rate
-- Projected rotation rank
-- Team-level deep scan
-- Projected top-four starter cards
-- MLB player headshots for projected starters
-- Ace, Top 3, Top 4, and rotation score information
-- Responsive desktop, tablet, and mobile layouts
-- Daily ranking movement support
-
-The interface intentionally uses a darker technical / data-system visual style rather than a standard Streamlit dashboard.
-
----
-
-## Ranking History
-
-October Shift now saves a dated snapshot of the full 30-team board after every update.
-
-History is stored in:
-
-```text
+``` text
 data/processed/ranking_history_2026.csv
 ```
 
-The history system avoids duplicate snapshots for the same latest completed-game date. When another game date is available, a new 30-team snapshot is added.
+The Movement page compares the newest snapshot with the previous one and
+can show rank change, score change, biggest riser, biggest faller,
+largest score gain, and the most stable team.
 
-The dashboard is prepared to show:
+If two snapshots produce the same rankings, the page says so rather than
+inventing movement. This part of the project should become more useful
+as more game dates are saved.
 
-```text
-▲ 3   moved up three places
-▼ 2   moved down two places
-—     unchanged
-NEW   no prior snapshot available
-```
-
-With more saved dates, this can later support team trend charts and biggest-riser / biggest-faller views.
-
----
+------------------------------------------------------------------------
 
 ## One-Command Update Pipeline
 
-The project can now rebuild the live board with one command:
+Rebuild the live board with:
 
-```bash
+``` bash
 python update_october_shift.py
 ```
 
-The updater runs the production pipeline in order:
+The current production updater runs 14 steps in order:
 
-```text
-1. Fetch latest completed MLB games
-2. Fetch current Statcast pitching data
-3. Identify starting pitchers
-4. Rebuild starter run scores
-5. Rebuild projected postseason rotations
-6. Rebuild the October Shift contender board
-7. Save the dated ranking-history snapshot
+``` text
+1.  Fetch latest MLB games
+2.  Fetch latest Statcast pitching data
+3.  Find starting pitchers
+4.  Build starter run scores
+5.  Build projected postseason rotations
+6.  Build bullpen appearance data
+7.  Build inherited-runner entry data
+8.  Fetch play-by-play data
+9.  Score inherited runners
+10. Build reliever outs
+11. Build reliever run scores
+12. Build bullpen scores
+13. Build the October Shift contender board
+14. Save ranking history
 ```
 
-If one step fails, the updater stops instead of continuing with partially updated data.
+If one step fails, the updater stops instead of continuing with
+incomplete downstream data.
 
-After updating, launch the dashboard with:
+Run the dashboard with:
 
-```bash
+``` bash
 streamlit run app.py
 ```
 
----
+------------------------------------------------------------------------
 
-## Main Production Files
+## Main Outputs
 
-```text
-2026-mlb-prediction/
-│
-├── app.py
-├── update_october_shift.py
-├── README.md
-├── requirements.txt
-│
-├── assets/
-│   └── MLB team logo files
-│
-├── data/
-│   ├── raw/
-│   │   ├── games_2026.csv
-│   │   └── pitching_2026.csv
-│   │
-│   └── processed/
-│       ├── pitcher_starts_2026.csv
-│       ├── starter_run_scores_2026.csv
-│       ├── projected_rotations_2026.csv
-│       ├── contender_scores_2026.csv
-│       └── ranking_history_2026.csv
-│
-└── src/
-    ├── fetch_data.py
-    ├── fetch_pitching.py
-    ├── build_pitcher_starts.py
-    ├── build_starter_run_scores.py
-    ├── build_projected_rotations.py
-    ├── build_contender_board.py
-    └── save_ranking_history.py
+``` text
+data/processed/contender_scores_2026.csv
+data/processed/projected_rotations_2026.csv
+data/processed/bullpen_scores_2026.csv
+data/processed/ranking_history_2026.csv
 ```
 
-There are additional experiment scripts in `src/`. I have kept them because they document the path of the project and show which ideas did and did not work.
+The repository also contains the supporting starter, reliever,
+inherited-runner, team-feature, training, and experiment files used
+during development.
 
----
+------------------------------------------------------------------------
 
-## Experimental Work Kept in the Repository
+## Experimental Work
 
-Some of the experiments included:
+Some of the experiments behind October Shift include:
 
-- Team-only game prediction
-- Recent-form features
-- XGBoost experiments
-- Starting-pitcher features
-- Starter-associated team records
-- Weighted starter records
-- Recent starter run scores
-- Time-window validation
-- Quality-start scoring
-- Rotation-weight sensitivity testing
+-   Team-only game prediction
+-   Recent-form features
+-   XGBoost experiments
+-   Starting-pitcher features
+-   Starter-associated team records
+-   Weighted starter records
+-   Recent starter run scores
+-   Time-window validation
+-   Quality/deep-start scoring
+-   Rotation-weight sensitivity testing
+-   Bullpen run-prevention scoring
+-   Inherited-runner tracking
 
-Not every experiment improved performance.
+Not every experiment improved performance. That is part of the project.
 
-That is part of the project.
+One of the biggest lessons has been that **adding more features does not
+automatically make a model better**.
 
-One of the main lessons from October Shift has been that **adding more features does not automatically make a model better**.
-
----
+------------------------------------------------------------------------
 
 ## Tech Stack
 
-- Python
-- Pandas
-- NumPy
-- scikit-learn
-- XGBoost
-- pybaseball
-- Statcast data
-- Streamlit
-- HTML / CSS inside Streamlit
+-   Python
+-   Pandas
+-   NumPy
+-   scikit-learn
+-   XGBoost
+-   pybaseball
+-   Statcast / MLB data
+-   Streamlit
+-   HTML / CSS inside Streamlit
 
----
+------------------------------------------------------------------------
 
-## Running the Project
+## Running Locally
 
-Clone the repository:
-
-```bash
+``` bash
 git clone <YOUR-REPOSITORY-URL>
 cd 2026-mlb-prediction
-```
 
-Create a virtual environment:
-
-```bash
 python -m venv venv
-```
-
-Activate it in Windows / Git Bash:
-
-```bash
 source venv/Scripts/activate
-```
 
-Install dependencies:
-
-```bash
 pip install -r requirements.txt
-```
 
-Update the data and rankings:
-
-```bash
 python update_october_shift.py
-```
-
-Run the dashboard:
-
-```bash
 streamlit run app.py
 ```
 
----
+Some pitching and play-by-play update steps process a large amount of
+season data and can take longer than the rest.
+
+------------------------------------------------------------------------
 
 ## What I Learned
 
-This project changed direction because the experiments did not support the original idea strongly enough.
+This project changed direction because the experiments did not support
+the original idea strongly enough.
 
-I expected adding starting-pitcher data to make the daily game model better. Several reasonable pitching features either did nothing or made it worse.
+I expected adding starting-pitcher data to make the daily game model
+better. Several reasonable pitching features either did nothing or made
+it worse. That forced me to stop asking how to make the model look
+better and start asking what the data was actually useful for.
 
-That forced me to stop asking, “How can I make this model look better?” and start asking, “What is the data actually useful for?”
+The project has given me practice with pulling and cleaning sports data,
+large pitch-level datasets, historical feature engineering without
+look-ahead, time-based validation, model comparison, small-sample
+reliability adjustments, custom scoring systems, inherited-runner
+tracking, multi-step data pipelines, and building a responsive Streamlit
+interface.
 
-The project gave me practice with:
-
-- Pulling and cleaning sports data
-- Working with hundreds of thousands of Statcast pitch records
-- Building historical features without looking ahead
-- Time-based validation
-- Comparing models against baselines
-- Feature engineering
-- Small-sample reliability adjustments
-- Testing ideas that fail
-- Designing custom scoring systems
-- Building an automated multi-step data pipeline
-- Building a responsive Streamlit interface
-- Turning analysis into something another person can actually explore
-
----
+------------------------------------------------------------------------
 
 ## Limitations
 
-**October Shift is not a World Series probability model.**  
-The score is relative. It is not a percentage chance of winning the championship.
+**October Shift is not a World Series probability model.** The score is
+relative, not a percentage chance of winning the championship.
 
-**The contender weights are hand-designed.**  
-They represent the current project hypothesis and have not been statistically proven to be optimal postseason weights.
+**The contender weights are hand-designed.** They represent the current
+project hypothesis and have not been statistically proven to be optimal
+postseason weights.
 
-**The projected rotation is a ceiling.**  
-It uses 2026 performance and workload but does not currently model injury status or guarantee postseason availability.
+**Projected rotations are not availability forecasts.** The model does
+not currently know who will be healthy or exactly how a team will set
+its postseason rotation.
 
-**Bullpens are not modeled separately yet.**  
-The pitching work currently focuses on starting rotations.
+**Bullpen scoring is still evolving.** The current version combines run
+prevention, depth, inherited-runner results and reliability adjustments,
+but there are other reasonable ways to model relief pitching.
 
-**Offense is represented indirectly.**  
-Run differential and team results capture offense to an extent, but there is not yet a dedicated lineup-quality component.
+**Offense is represented indirectly.** Run differential and team results
+capture offense to an extent, but there is not yet a dedicated
+lineup-quality component.
 
-**The quality-start feature is a project proxy.**  
-It is built from the available pitch/game data and should not be treated as an official MLB quality-start statistic.
+**Postseason baseball is a small sample.** A strong contender profile
+cannot remove the randomness of a short playoff series.
 
-**Postseason baseball is a small sample.**  
-A strong contender profile cannot remove the randomness of a short playoff series.
+------------------------------------------------------------------------
 
----
+## Next Steps
 
-## Possible Next Steps
+-   Deploy the current dashboard so other people can test it
+-   Keep collecting ranking-history snapshots
+-   Improve Movement once more dates exist
+-   Consider pitcher health/availability as a separate layer
+-   Consider dedicated offensive metrics
+-   Compare October Shift with current World Series market rankings
+-   Make cloud updates easier or scheduled
+-   Test the contender score historically
+-   Continue UI cleanup based on real viewer feedback
 
-The project is still active. The most useful next additions are likely:
+New features should earn their place instead of being added simply
+because the data exists.
 
-- Bullpen strength
-- Pitcher health / availability as a separate layer
-- Dedicated offensive metrics
-- Rank-over-time charts after more history accumulates
-- Biggest risers and fallers
-- World Series market / betting-rank comparison
-- Scheduled cloud updates for the deployed dashboard
-- Historical testing of whether higher October Shift scores are associated with deeper postseason runs
-
-New features should earn their place instead of being added simply because the data exists.
-
----
-
-## About the Name
-
-**October Shift** is about how the picture changes as the season moves toward October.
-
-The question is not simply:
-
-> Who has the best record?
-
-It is:
-
-> Which teams begin to look more or less dangerous when current form, run differential, opponent quality, overall strength, and postseason rotation depth are considered together?
-
----
+------------------------------------------------------------------------
 
 ## Status
 
-**Active project — 2026 MLB season**
+**Active work in progress --- 2026 MLB season**
 
-The scoring system, update pipeline, ranking history, and responsive dashboard are working. The project is still being developed as new games are played and new ideas are tested.
+The scoring system, starting-rotation model, bullpen model, update
+pipeline, ranking history, movement view, and multi-page dashboard are
+working. The project is still being developed as new games are played
+and the model is tested.

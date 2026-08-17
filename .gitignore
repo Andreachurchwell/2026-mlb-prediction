@@ -34,3 +34,6 @@ models/*.joblib
 # Logs / cache
 *.log
 .cache/
+
+# MLB play-by-play cache
+data/raw/play_by_play/
