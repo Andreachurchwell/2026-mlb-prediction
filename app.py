@@ -100,7 +100,7 @@ MODEL_WEIGHTS = {
 @st.cache_data
 def load_data():
     board = pd.read_csv(DATA_FILE)
-    games = pd.read_csv(GAMES_FILE)
+    # games = pd.read_csv(GAMES_FILE)
     starters = pd.read_csv(STARTERS_FILE)
     bullpen_appearances = pd.read_csv(BULLPEN_APPEARANCES_FILE)
     relievers = pd.read_csv(RELIEVER_RUN_FILE)
@@ -112,7 +112,7 @@ def load_data():
     else:
         history = pd.DataFrame(columns=["snapshot_date", "team", "rank", "october_shift_score"])
 
-    games["date"] = pd.to_datetime(games["date"], errors="coerce")
+    # games["date"] = pd.to_datetime(games["date"], errors="coerce")
     starters["date"] = pd.to_datetime(starters["date"], errors="coerce")
     bullpen_appearances["game_date"] = pd.to_datetime(bullpen_appearances["game_date"], errors="coerce")
     if not history.empty:
@@ -120,11 +120,17 @@ def load_data():
 
     board["league"] = board["team"].map(lambda t: TEAM_META.get(t, {}).get("league", "?"))
     board["division"] = board["team"].map(lambda t: TEAM_META.get(t, {}).get("division", "?"))
-    return board, games, starters, bullpen_appearances, relievers, bullpen, rotations, history
+    return board, starters, bullpen_appearances, relievers, bullpen, rotations, history
 
-board, games, starters, bullpen_appearances, relievers, bullpen, rotations, history = load_data()
-latest_game_date = games["date"].max()
-latest_game_label = latest_game_date.strftime("%B %d, %Y") if pd.notna(latest_game_date) else "Unknown"
+board, starters, bullpen_appearances, relievers, bullpen, rotations, history = load_data()
+latest_game_date = history["snapshot_date"].max()
+latest_game_label = (
+    latest_game_date.strftime("%B %d, %Y")
+    if pd.notna(latest_game_date)
+    else "Unknown"
+)
+
+completed_games = int(board["games"].sum() / 2)
 
 
 def image_to_base64(path):
@@ -1818,7 +1824,7 @@ select{
 st.html(
     f'''<div class="brand"><div class="brand-row"><div><div class="brand-title"><span class="brand-october">October</span> <span class="brand-shift">Shift</span></div>
     <div class="brand-sub">2026 MLB Postseason Contender Rankings</div></div>
-    <div class="brand-meta">Through {latest_game_label}<br>{len(games):,} completed games · 30 teams</div></div></div>''')
+    <div class="brand-meta">Through {latest_game_label}<br>{completed_games:,} completed games · 30 teams</div></div></div>''')
 
 nav = ["Home", "Rankings", "Teams", "Rotations", "Bullpens", "Movement", "Model"]
 
