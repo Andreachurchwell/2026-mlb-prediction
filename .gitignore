@@ -22,9 +22,24 @@ Thumbs.db
 # Streamlit secrets
 .streamlit/secrets.toml
 
-# Raw and generated data
-data/raw/*.csv
+# =========================================================
+# DATA
+# =========================================================
+
+# Raw MLB data stays on this computer
+data/raw/
+
+# Ignore processed CSVs by default
 data/processed/*.csv
+
+# Allow the small processed files used by the live dashboard
+!data/processed/contender_scores_2026.csv
+!data/processed/projected_rotations_2026.csv
+!data/processed/bullpen_scores_2026.csv
+!data/processed/ranking_history_2026.csv
+!data/processed/pitcher_starts_2026.csv
+!data/processed/bullpen_appearances_2026.csv
+!data/processed/reliever_run_scores_2026.csv
 
 # Trained models
 models/*.json
@@ -34,6 +49,3 @@ models/*.joblib
 # Logs / cache
 *.log
 .cache/
-
-# MLB play-by-play cache
-data/raw/play_by_play/
