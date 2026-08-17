@@ -1,4 +1,3 @@
-
 from pathlib import Path
 import base64
 
@@ -19,11 +18,25 @@ DATA_FILE = (
     / "contender_scores_2026.csv"
 )
 
+HISTORY_FILE = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "ranking_history_2026.csv"
+)
+
 GAMES_FILE = (
     PROJECT_ROOT
     / "data"
     / "raw"
     / "games_2026.csv"
+)
+
+STARTERS_FILE = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "pitcher_starts_2026.csv"
 )
 
 ASSETS_DIR = PROJECT_ROOT / "assets"
@@ -189,10 +202,32 @@ def load_data():
 
     board = pd.read_csv(DATA_FILE)
     games = pd.read_csv(GAMES_FILE)
+    starters = pd.read_csv(STARTERS_FILE)
+
+    if HISTORY_FILE.exists():
+        history = pd.read_csv(HISTORY_FILE)
+    else:
+        history = pd.DataFrame(
+            columns=[
+                "snapshot_date",
+                "team",
+                "rank",
+                "october_shift_score",
+            ]
+        )
 
     games["date"] = pd.to_datetime(
         games["date"]
     )
+
+    starters["date"] = pd.to_datetime(
+        starters["date"]
+    )
+
+    if not history.empty:
+        history["snapshot_date"] = pd.to_datetime(
+            history["snapshot_date"]
+        )
 
     board["league"] = board["team"].map(
         lambda team: TEAM_META.get(
@@ -214,16 +249,224 @@ def load_data():
         )
     )
 
-    return board, games
+    return board, games, starters, history
 
 
-board, games = load_data()
+board, games, starters, history = load_data()
 
 latest_game_date = (
     games["date"]
     .max()
     .strftime("%b %d, %Y")
 )
+
+
+# =========================================================
+# RANK MOVEMENT
+# =========================================================
+
+def add_rank_movement(
+    board,
+    history,
+):
+
+    result = board.copy()
+
+    result["previous_rank"] = pd.NA
+    result["rank_change"] = pd.NA
+    result["movement_label"] = "NEW"
+    result["movement_class"] = "movement-new"
+
+    if history.empty:
+        return result
+
+    snapshot_dates = (
+        history["snapshot_date"]
+        .dropna()
+        .drop_duplicates()
+        .sort_values()
+        .tolist()
+    )
+
+    if len(snapshot_dates) < 2:
+        return result
+
+    previous_date = snapshot_dates[-2]
+
+    previous = (
+        history[
+            history["snapshot_date"]
+            == previous_date
+        ][
+            [
+                "team",
+                "rank",
+            ]
+        ]
+        .rename(
+            columns={
+                "rank":
+                    "previous_rank"
+            }
+        )
+    )
+
+    result = result.drop(
+        columns=[
+            "previous_rank",
+        ]
+    ).merge(
+        previous,
+        on="team",
+        how="left",
+    )
+
+    result["rank_change"] = (
+        result["previous_rank"]
+        - result["rank"]
+    )
+
+    def movement_label(row):
+
+        if pd.isna(row["previous_rank"]):
+            return "NEW"
+
+        change = int(
+            row["rank_change"]
+        )
+
+        if change > 0:
+            return f"▲ {change}"
+
+        if change < 0:
+            return f"▼ {abs(change)}"
+
+        return "—"
+
+    def movement_class(row):
+
+        if pd.isna(row["previous_rank"]):
+            return "movement-new"
+
+        change = int(
+            row["rank_change"]
+        )
+
+        if change > 0:
+            return "movement-up"
+
+        if change < 0:
+            return "movement-down"
+
+        return "movement-flat"
+
+    result["movement_label"] = result.apply(
+        movement_label,
+        axis=1,
+    )
+
+    result["movement_class"] = result.apply(
+        movement_class,
+        axis=1,
+    )
+
+    return result
+
+
+board = add_rank_movement(
+    board,
+    history,
+)
+
+
+# =========================================================
+# PITCHER ID / HEADSHOT HELPERS
+# =========================================================
+
+def build_pitcher_id_map(starters):
+
+    home = starters[
+        [
+            "date",
+            "home_starter_name",
+            "home_starter_id",
+        ]
+    ].rename(
+        columns={
+            "home_starter_name": "pitcher_name",
+            "home_starter_id": "pitcher_id",
+        }
+    )
+
+    away = starters[
+        [
+            "date",
+            "away_starter_name",
+            "away_starter_id",
+        ]
+    ].rename(
+        columns={
+            "away_starter_name": "pitcher_name",
+            "away_starter_id": "pitcher_id",
+        }
+    )
+
+    ids = pd.concat(
+        [home, away],
+        ignore_index=True,
+    )
+
+    ids = ids.dropna(
+        subset=[
+            "pitcher_name",
+            "pitcher_id",
+        ]
+    )
+
+    ids = (
+        ids
+        .sort_values(
+            [
+                "pitcher_name",
+                "date",
+            ]
+        )
+        .groupby(
+            "pitcher_name",
+            as_index=False,
+        )
+        .tail(1)
+    )
+
+    return {
+        row["pitcher_name"]: int(row["pitcher_id"])
+        for _, row in ids.iterrows()
+    }
+
+
+PITCHER_ID_MAP = build_pitcher_id_map(
+    starters
+)
+
+
+def pitcher_headshot_url(pitcher_name):
+
+    pitcher_id = PITCHER_ID_MAP.get(
+        pitcher_name
+    )
+
+    if pitcher_id is None:
+        return ""
+
+    # MLB's player image service uses the MLBAM player ID.
+    # The default image in the URL provides a fallback if a
+    # current headshot is unavailable.
+    return (
+        "https://img.mlbstatic.com/mlb-photos/image/upload/"
+        "w_260,d_people:generic:headshot:silo:current.png,"
+        "q_auto:best,f_auto/"
+        f"v1/people/{pitcher_id}/headshot/67/current"
+    )
 
 
 # =========================================================
@@ -367,7 +610,7 @@ st.html(
     .leader-score { margin-top:20px; font-family:'Orbitron',sans-serif; font-size:40px; font-weight:900; color:var(--green); }
     .leader-score-label { margin-top:6px; font-family:'Orbitron',sans-serif; font-size:9px; font-weight:600; letter-spacing:2px; color:var(--text-soft); }
 
-    .rank-row { display:grid; grid-template-columns:55px 60px minmax(220px,1.7fr) 105px 105px 105px 110px; gap:12px; align-items:center; padding:15px 14px; border-bottom:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.025); transition:.2s ease; }
+    .rank-row { display:grid; grid-template-columns:55px 60px minmax(220px,1.7fr) 70px 90px 100px 100px 100px 110px; gap:12px; align-items:center; padding:15px 14px; border-bottom:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.025); transition:.2s ease; }
     .rank-row:hover { background:rgba(68,244,255,.07); border-left:2px solid var(--cyan); }
     .rank-num { font-family:'Orbitron',sans-serif; font-size:18px; font-weight:700; color:#B9C9CD; }
     .rank-logo { display:block; width:46px; height:46px; object-fit:contain; padding:5px; background:#F7FAFB; border-radius:8px; }
@@ -375,6 +618,13 @@ st.html(
     .rank-team-meta { margin-top:3px; font-family:'Orbitron',sans-serif; font-size:9px; font-weight:600; letter-spacing:1.2px; color:#A8B8BC; }
     .rank-stat { font-family:'Orbitron',sans-serif; font-size:11px; font-weight:600; color:#D0DCDF; }
     .rank-score { text-align:right; font-family:'Orbitron',sans-serif; font-size:20px; font-weight:800; color:var(--green); }
+    .rank-move { font-family:'Orbitron',sans-serif; font-size:10px; font-weight:800; letter-spacing:.7px; text-align:center; white-space:nowrap; }
+    .movement-up { color:var(--green); }
+    .movement-down { color:#FF7A8A; }
+    .movement-flat { color:#8FA1A6; }
+    .movement-new { color:var(--cyan); }
+    .leader-move { margin-top:8px; display:inline-block; padding:5px 8px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.025); font-family:'Orbitron',sans-serif; font-size:9px; font-weight:800; letter-spacing:1px; }
+
 
     .intel { margin-top:16px; padding:32px; border:1px solid rgba(68,244,255,.30); background:#0D171C; }
     .intel-head { display:flex; align-items:center; gap:24px; margin-bottom:28px; }
@@ -398,27 +648,86 @@ st.html(
 
 
     .rotation-panel { margin-top:14px; padding:26px; border:1px solid rgba(199,255,99,.28); background:linear-gradient(135deg,rgba(199,255,99,.045),#0D171C); }
-    .rotation-topline { display:flex; justify-content:space-between; gap:18px; align-items:end; margin-bottom:20px; }
+    .rotation-topline { margin-bottom:18px; }
     .rotation-title { font-family:'Orbitron',sans-serif; font-size:12px; font-weight:800; letter-spacing:2px; color:var(--green); }
-    .rotation-summary { font-family:'Orbitron',sans-serif; font-size:10px; color:#D7E2E5; }
-    .rotation-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-    .rotation-arm { padding:15px 13px; border:1px solid rgba(255,255,255,.12); background:#111D22; }
+    .rotation-stat-strip { display:grid; grid-template-columns:110px 110px minmax(190px,1.5fr) 110px 110px; gap:10px; margin:16px 0 20px; }
+    .rotation-stat-box { min-width:0; padding:12px 13px; border:1px solid rgba(255,255,255,.11); background:rgba(255,255,255,.025); }
+    .rotation-stat-label { font-family:'Orbitron',sans-serif; font-size:7px; font-weight:700; letter-spacing:1.4px; color:#8FA1A6; margin-bottom:7px; }
+    .rotation-stat-value { font-family:'Orbitron',sans-serif; font-size:17px; font-weight:800; line-height:1.2; color:#fff; overflow-wrap:anywhere; }
+    .rotation-stat-value.green { color:var(--green); }
+    .rotation-stat-value.cyan { color:var(--cyan); }
+    .rotation-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .rotation-arm { min-width:0; padding:0 13px 16px; border:1px solid rgba(255,255,255,.12); background:#111D22; overflow:hidden; }
+    .rotation-photo-wrap { height:190px; margin:0 -13px 14px; overflow:hidden; background:linear-gradient(180deg,rgba(68,244,255,.08),rgba(255,255,255,.025)); border-bottom:1px solid rgba(255,255,255,.10); }
+    .rotation-photo { width:100%; height:100%; object-fit:contain; object-position:center bottom; display:block; }
+    .rotation-photo-fallback { height:100%; display:flex; align-items:center; justify-content:center; padding:12px; text-align:center; font-family:'Orbitron',sans-serif; font-size:9px; letter-spacing:1.3px; color:#809398; }
     .rotation-slot { font-family:'Orbitron',sans-serif; font-size:8px; letter-spacing:1.5px; color:var(--cyan); margin-bottom:7px; }
-    .rotation-name { font-family:'Space Grotesk',sans-serif; font-size:15px; font-weight:700; color:#fff; line-height:1.25; }
-    .rotation-score { margin-top:8px; font-family:'Orbitron',sans-serif; font-size:17px; font-weight:700; color:var(--green); }
-    .rotation-note { margin-top:14px; font-family:'Space Grotesk',sans-serif; font-size:12px; line-height:1.6; color:#A7B8BD; }
+    .rotation-name { font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; color:#fff; line-height:1.25; overflow-wrap:anywhere; }
+    .rotation-note { margin-top:15px; padding-top:13px; border-top:1px solid rgba(255,255,255,.07); font-family:'Space Grotesk',sans-serif; font-size:12px; line-height:1.65; color:#A7B8BD; }
 
     .tech-footer { margin-top:60px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08); font-family:'Orbitron',sans-serif; font-size:8px; font-weight:600; letter-spacing:2px; color:#90A2A6; }
 
+    @media (max-width:1100px) {
+        .rotation-stat-strip {
+            grid-template-columns:repeat(2,minmax(0,1fr));
+        }
+        .rotation-stat-box:nth-child(3) {
+            grid-column:span 2;
+        }
+        .rotation-grid {
+            grid-template-columns:repeat(2,minmax(0,1fr));
+        }
+    }
+
     @media (max-width:900px) {
+        .block-container { padding-left:1rem; padding-right:1rem; }
         .hero { padding:28px 22px; }
-        .rank-row { grid-template-columns:35px 50px 1fr 75px; }
+        .rank-row { grid-template-columns:35px 46px minmax(0,1fr) 52px 68px; }
         .rank-hide-mobile { display:none; }
-        .score-grid { grid-template-columns:repeat(2,1fr); }
-        .rotation-grid { grid-template-columns:repeat(2,1fr); }
-        .rotation-topline { display:block; }
-        .rotation-summary { margin-top:10px; line-height:1.7; }
+        .score-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .intel { padding:22px; }
+        .intel-head { gap:16px; }
+        .intel-logo { width:82px; height:82px; }
         .intel-team { font-size:22px; }
+        .rotation-panel { padding:20px; }
+        .rotation-photo-wrap { height:175px; }
+    }
+
+    @media (max-width:620px) {
+        .block-container { padding-left:.75rem; padding-right:.75rem; }
+        .hero { padding:24px 18px; }
+        .hero-title { font-size:38px; letter-spacing:-1px; }
+        .hero-sub { font-size:14px; }
+        .intel { padding:18px; }
+        .intel-head { align-items:flex-start; }
+        .intel-logo { width:70px; height:70px; }
+        .intel-team { font-size:18px; }
+        .intel-meta { line-height:1.8; }
+        .score-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+        .score-module { padding:14px 10px; }
+        .module-value { font-size:17px; }
+        .rotation-panel { padding:16px; }
+        .rotation-title { font-size:10px; line-height:1.6; }
+        .rotation-stat-strip {
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:8px;
+        }
+        .rotation-stat-box { padding:11px 10px; }
+        .rotation-stat-box:nth-child(3) { grid-column:1 / -1; }
+        .rotation-stat-value { font-size:15px; }
+        .rotation-grid { grid-template-columns:1fr; gap:10px; }
+        .rotation-photo-wrap { height:220px; }
+        .rotation-name { font-size:17px; }
+        .rotation-note { font-size:11px; }
+        .rank-move { font-size:8px; }
+        .rank-score { font-size:16px; }
+
+    }
+
+    @media (max-width:400px) {
+        .score-grid { grid-template-columns:1fr 1fr; }
+        .rotation-stat-strip { grid-template-columns:1fr 1fr; }
+        .rotation-photo-wrap { height:205px; }
     }
 
     </style>
@@ -447,7 +756,7 @@ st.html(
 
             A live 2026 MLB postseason contender system built around
             current form, run differential, opponent-adjusted performance,
-            season strength and postseason rotation ceiling.
+            season strength and projected postseason rotation ceiling.
 
             The October Shift Score is a relative contender rating,
             not a World Series probability.
@@ -567,6 +876,10 @@ for column, (_, team) in zip(
                     OCTOBER SHIFT SCORE
                 </div>
 
+                <div class="leader-move {team["movement_class"]}">
+                    SHIFT // {team["movement_label"]}
+                </div>
+
             </div>
             """
         )
@@ -650,6 +963,20 @@ def render_ranking_table(data):
 
                     </div>
 
+                </div>
+
+                <div class="rank-move {team["movement_class"]}">
+                    {team["movement_label"]}
+                </div>
+
+                <div
+                    class="
+                        rank-stat
+                        rank-hide-mobile
+                    "
+                >
+                    ROT
+                    #{int(team["projected_rotation_rank"])}
                 </div>
 
                 <div
@@ -839,7 +1166,7 @@ st.html(
 
                 <div class="intel-meta">
 
-                    SYSTEM RANK //
+                    CONTENDER RANK //
                     {int(team["rank"]):02d}
 
                     &nbsp;&nbsp;
@@ -854,6 +1181,13 @@ st.html(
                     {int(team["wins"])}
                     -
                     {int(team["losses"])}
+
+                    &nbsp;&nbsp;
+
+                    SHIFT //
+                    <span class="{team["movement_class"]}">
+                        {team["movement_label"]}
+                    </span>
 
                 </div>
 
@@ -942,7 +1276,7 @@ st.html(
             <div class="score-module">
 
                 <div class="module-value">
-                    #{int(team["rotation_rank"])}
+                    #{int(team["projected_rotation_rank"])}
                 </div>
 
                 <div class="module-label">
@@ -966,53 +1300,126 @@ st.html(
 
 rotation_names = [
     name.strip()
-    for name in str(team.get("top_4_starters", "")).split("|")
+    for name in str(
+        team.get(
+            "projected_top_4",
+            ""
+        )
+    ).split("|")
     if name.strip()
-]
-
-rotation_scores = [
-    score.strip()
-    for score in str(team.get("top_4_adjusted_scores", "")).split("|")
-    if score.strip()
 ]
 
 rotation_cards = []
 
 for index in range(4):
-    name = rotation_names[index] if index < len(rotation_names) else "Depth TBD"
-    score = rotation_scores[index] if index < len(rotation_scores) else "—"
-    slot = "ACE" if index == 0 else f"SP{index + 1}"
+
+    name = (
+        rotation_names[index]
+        if index < len(rotation_names)
+        else "Depth TBD"
+    )
+
+    slot = (
+        "ACE"
+        if index == 0
+        else f"SP{index + 1}"
+    )
+
+    headshot = pitcher_headshot_url(
+        name
+    )
+
+    if headshot:
+
+        photo_html = f"""
+        <div class="rotation-photo-wrap">
+            <img
+                class="rotation-photo"
+                src="{headshot}"
+                alt="{name}"
+                onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;rotation-photo-fallback&quot;>IMAGE UNAVAILABLE</div>';"
+            >
+        </div>
+        """
+
+    else:
+
+        photo_html = """
+        <div class="rotation-photo-wrap">
+            <div class="rotation-photo-fallback">
+                IMAGE UNAVAILABLE
+            </div>
+        </div>
+        """
 
     rotation_cards.append(
         f"""
         <div class="rotation-arm">
-            <div class="rotation-slot">{slot}</div>
-            <div class="rotation-name">{name}</div>
-            <div class="rotation-score">{score}</div>
+
+            {photo_html}
+
+            <div class="rotation-slot">
+                {slot}
+            </div>
+
+            <div class="rotation-name">
+                {name}
+            </div>
+
         </div>
         """
     )
+
 
 st.html(
     f"""
     <div class="rotation-panel">
 
         <div class="rotation-topline">
-            <div>
-                <div class="rotation-title">
-                    POSTSEASON ROTATION // CEILING
+
+            <div class="rotation-title">
+                POSTSEASON ROTATION // PROJECTED TOP 04
+            </div>
+
+        </div>
+
+        <div class="rotation-stat-strip">
+
+            <div class="rotation-stat-box">
+                <div class="rotation-stat-label">MLB RANK</div>
+                <div class="rotation-stat-value cyan">
+                    #{int(team["projected_rotation_rank"]):02d}
                 </div>
             </div>
 
-            <div class="rotation-summary">
-                MLB RANK // #{int(team["rotation_rank"])}
-                &nbsp;&nbsp;
-                SCORE // {team["postseason_rotation_score"]:.3f}
-                &nbsp;&nbsp;
-                TOP 3 // {team["top_3_score"]:.3f}
-                &nbsp;&nbsp;
-                TOP 4 // {team["top_4_score"]:.3f}
+            <div class="rotation-stat-box">
+                <div class="rotation-stat-label">ROTATION SCORE</div>
+                <div class="rotation-stat-value green">
+                    {team["projected_rotation_score"]:.1f}
+                </div>
             </div>
+
+            <div class="rotation-stat-box">
+                <div class="rotation-stat-label">ACE</div>
+                <div class="rotation-stat-value">
+                    {team["projected_ace"]}
+                </div>
+            </div>
+
+            <div class="rotation-stat-box">
+                <div class="rotation-stat-label">TOP 3</div>
+                <div class="rotation-stat-value">
+                    {team["projected_top_3_score"]:.1f}
+                </div>
+            </div>
+
+            <div class="rotation-stat-box">
+                <div class="rotation-stat-label">TOP 4</div>
+                <div class="rotation-stat-value">
+                    {team["projected_top_4_score"]:.1f}
+                </div>
+            </div>
+
         </div>
 
         <div class="rotation-grid">
@@ -1020,11 +1427,81 @@ st.html(
         </div>
 
         <div class="rotation-note">
-            Rotation ceiling rewards teams that can stack multiple strong 2026 starters.
-            It does not assume every pitcher shown will be healthy or available in October;
-            availability can be tracked separately without erasing a pitcher's underlying 2026 performance.
+            <strong>ROTATION MODEL:</strong>
+            2026 run suppression + quality/deep-start performance,
+            then ace strength, top-three quality and four-man depth.
+            Minimum 5 starts plus starter-level workload.
+            Ceiling only; October health and availability are separate.
         </div>
 
+    </div>
+    """
+)
+
+
+# =========================================================
+# RANK MOVEMENT STATUS
+# =========================================================
+
+if history.empty:
+
+    movement_status = (
+        "Ranking history has not started yet."
+    )
+
+else:
+
+    history_dates = (
+        history["snapshot_date"]
+        .dropna()
+        .drop_duplicates()
+        .sort_values()
+    )
+
+    if len(history_dates) < 2:
+
+        movement_status = (
+            "FIRST SNAPSHOT SAVED // "
+            "Movement begins automatically after the next new game-date snapshot."
+        )
+
+    else:
+
+        previous_label = (
+            history_dates.iloc[-2]
+            .strftime("%b %d")
+            .upper()
+        )
+
+        latest_label = (
+            history_dates.iloc[-1]
+            .strftime("%b %d")
+            .upper()
+        )
+
+        movement_status = (
+            f"SHIFT WINDOW // "
+            f"{previous_label} → {latest_label}"
+        )
+
+
+st.html(
+    f"""
+    <div class="section-label">
+        RANK MOVEMENT // DAILY SHIFT
+    </div>
+
+    <div class="logic-card">
+        <div class="logic-title">
+            {movement_status}
+        </div>
+
+        <div class="logic-text">
+            ▲ means a team moved up, ▼ means it moved down,
+            and — means its rank held. With only one saved
+            snapshot, teams display NEW until the next dated
+            snapshot is created by the update pipeline.
+        </div>
     </div>
     """
 )

@@ -16,7 +16,7 @@ ROTATION_FILE = (
     PROJECT_ROOT
     / "data"
     / "processed"
-    / "rotation_scores_2026.csv"
+    / "projected_rotations_2026.csv"
 )
 
 OUTPUT_FILE = (
@@ -402,16 +402,16 @@ def build_contender_scores(
 
     rotation_median = (
         df[
-            "postseason_rotation_score"
+            "projected_rotation_score"
         ]
         .median()
     )
 
     df[
-        "postseason_rotation_score"
+        "projected_rotation_score"
     ] = (
         df[
-            "postseason_rotation_score"
+            "projected_rotation_score"
         ]
         .fillna(
             rotation_median
@@ -425,7 +425,7 @@ def build_contender_scores(
     df["rotation_component"] = (
         normalize(
             df[
-                "postseason_rotation_score"
+                "projected_rotation_score"
             ]
         )
     )
@@ -592,15 +592,12 @@ def main():
         "team",
         "wins",
         "losses",
-
         "post_asb_win_pct",
         "last_10_win_pct",
         "run_diff_per_game",
         "quality_weighted_win_pct",
-
-        "rotation_rank",
-        "postseason_rotation_score",
-
+        "projected_rotation_rank",
+        "projected_rotation_score",
         "october_shift_score",
     ]
 
@@ -620,12 +617,12 @@ def main():
 
     rotation_display = [
         "team",
-        "rotation_rank",
-        "ace_name",
-        "top_3_score",
-        "top_4_score",
-        "postseason_rotation_score",
-        "top_4_starters",
+        "projected_rotation_rank",
+        "projected_ace",
+        "projected_top_3_score",
+        "projected_top_4_score",
+        "projected_rotation_score",
+        "projected_top_4",
     ]
 
     print(
@@ -633,7 +630,7 @@ def main():
             rotation_display
         ]
         .sort_values(
-            "rotation_rank"
+            "projected_rotation_rank"
         )
         .head(10)
         .to_string(

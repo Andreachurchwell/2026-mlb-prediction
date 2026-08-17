@@ -46,6 +46,7 @@ def main():
         "description",
         "balls",
         "strikes",
+        "outs_when_up",
         "post_away_score",
         "post_home_score"
     ]
