@@ -218,7 +218,7 @@ automatically make a model better**.
 ## Running Locally
 
 ``` bash
-git clone <YOUR-REPOSITORY-URL>
+git clone https://github.com/Andreachurchwell/2026-mlb-prediction
 cd 2026-mlb-prediction
 
 python -m venv venv
