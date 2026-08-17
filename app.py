@@ -13,7 +13,7 @@ st.set_page_config(
 PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_FILE = PROJECT_ROOT / "data" / "processed" / "contender_scores_2026.csv"
 HISTORY_FILE = PROJECT_ROOT / "data" / "processed" / "ranking_history_2026.csv"
-GAMES_FILE = PROJECT_ROOT / "data" / "raw" / "games_2026.csv"
+# GAMES_FILE = PROJECT_ROOT / "data" / "raw" / "games_2026.csv"
 STARTERS_FILE = PROJECT_ROOT / "data" / "processed" / "pitcher_starts_2026.csv"
 BULLPEN_APPEARANCES_FILE = PROJECT_ROOT / "data" / "processed" / "bullpen_appearances_2026.csv"
 RELIEVER_RUN_FILE = PROJECT_ROOT / "data" / "processed" / "reliever_run_scores_2026.csv"
