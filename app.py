@@ -90,10 +90,11 @@ TEAM_LOGO_FILES = {
 MODEL_WEIGHTS = {
     "Starting Rotation": 0.20,
     "Bullpen": 0.05,
+    "Offensive Momentum": 0.15,
     "Run Differential": 0.20,
-    "Post All-Star Performance": 0.20,
-    "Last 10 Games": 0.15,
-    "Quality-Adjusted Performance": 0.10,
+    "Post All-Star Performance": 0.15,
+    "Last 10 Games": 0.10,
+    "Quality-Adjusted Performance": 0.05,
     "Overall Record": 0.10,
 }
 
@@ -243,6 +244,7 @@ def get_component_explanation(team_row):
     components = {
         "Starting rotation": float(team_row.get("rotation_component", 50)),
         "Bullpen": float(team_row.get("bullpen_component", 50)),
+        "Offensive momentum": float(team_row.get("offense_component", 50)),
         "Run differential": float(team_row.get("run_diff_component", 50)),
         "Post All-Star form": float(team_row.get("post_asb_component", 50)),
         "Last 10 games": float(team_row.get("last_10_component", 50)),
@@ -258,6 +260,11 @@ def component_detail(label, t):
         return f"{rank_text(t['projected_rotation_rank'])} MLB · score {t['projected_rotation_score']:.1f}"
     if label == "Bullpen":
         return f"{rank_text(t['bullpen_rank'])} MLB · score {t['neutral_bullpen_score']:.1f}"
+    if label == "Offensive momentum":
+        return (
+            f"{rank_text(t['offensive_momentum_rank'])} MLB · "
+            f"{t['offense_level']} · {t['offense_direction']}"
+        )
     if label == "Run differential":
         return f"{run_diff_text(t['run_diff_per_game'])} runs/game"
     if label == "Post All-Star form":
@@ -278,6 +285,7 @@ def icon_img(kind, size=22):
     icons = {
         "rotation": '<circle cx="12" cy="12" r="8.5" fill="none" stroke="#FFFFFF" stroke-width="1.8"/><path d="M8.2 5.6c2.4 1.3 3.5 3.1 3.5 5.5s-1.1 4.2-3.5 5.5M15.8 7.3c-2.1 1.1-3.1 2.6-3.1 4.7s1 3.6 3.1 4.7" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>',
         "bullpen": '<path d="M6 18V8.5M18 18V8.5M4.5 18h15M7.5 8.5h9M9 8.5V6.2h6v2.3M9.2 18v-4.7h5.6V18" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+        "offense": '<path d="M5 17l4-5 3 2 6-8M16 6h3v3" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="17" r="1.5" fill="#FFFFFF"/>',
         "run_diff": '<path d="M5 6h14v12H5zM8 9h3M13 9h3M8 13h3M13 13h3" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linejoin="round"/>',
         "post_asb": '<rect x="5" y="6.5" width="14" height="12" rx="1.5" fill="none" stroke="#FFFFFF" stroke-width="1.7"/><path d="M8 4.5v4M16 4.5v4M5 10h14M9 13.5l2 2 4-4" fill="none" stroke="#FFFFFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
         "last10": '<path d="M5 17V8M10 17V11M15 17V6M20 17V9" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><path d="M4 19h17" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>',
@@ -306,6 +314,7 @@ def icon_img(kind, size=22):
 MODEL_ICON_MAP = {
     "Starting Rotation": "rotation",
     "Bullpen": "bullpen",
+    "Offensive Momentum": "offense",
     "Run Differential": "run_diff",
     "Post All-Star Performance": "post_asb",
     "Last 10 Games": "last10",
@@ -542,7 +551,7 @@ div[role="radiogroup"] > label [data-testid="stMarkdownContainer"]{
 
 div[role="radiogroup"]{
     display:grid !important;
-    grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+    grid-template-columns:repeat(8,minmax(0,1fr)) !important;
     width:100% !important;
     max-width:none !important;
     overflow:hidden !important;
@@ -608,7 +617,7 @@ div[role="radiogroup"] > label p{
 
 
 /* FINAL NAV */
-.os-nav{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;margin:12px 0 0;background:var(--navy);border:1px solid #08223a;box-shadow:0 2px 7px rgba(10,41,68,.13)}
+.os-nav{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;margin:12px 0 0;background:var(--navy);border:1px solid #08223a;box-shadow:0 2px 7px rgba(10,41,68,.13)}
 .os-nav a{min-height:48px;padding:0 10px;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff!important;text-decoration:none!important;font-size:12px;font-weight:800;border-right:1px solid rgba(255,255,255,.14);box-sizing:border-box}
 .os-nav a:last-child{border-right:0}.os-nav a:hover{background:#173f61}.os-nav a.active{background:#244f72;box-shadow:inset 0 -4px 0 var(--red)}
 .os-nav-dot{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#fff}.os-nav a.active .os-nav-dot{background:#ff4d62}
@@ -629,9 +638,22 @@ div[role="radiogroup"] > label p{
 .weight-pct{text-align:right;color:var(--navy);font-size:14px;font-weight:900}.model-total{display:flex;justify-content:space-between;padding:12px 16px;background:#d7e8f4;border-top:1px solid var(--line2);color:var(--navy);font-weight:900}
 .meaning-list{padding:4px 18px 8px}.meaning-item{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:flex-start;padding:18px 0;border-bottom:1px solid #bfd4e3}.meaning-item:last-child{border-bottom:0}
 .meaning-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#12538a;color:#fff}.meaning-copy{color:#294b64;font-size:14px;line-height:1.58}
-.model-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.model-detail{background:var(--card);border:1px solid var(--line2);padding:17px;min-height:170px}
+.model-detail-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:16px}.model-detail{background:var(--card);border:1px solid var(--line2);padding:17px;min-height:170px}
 .model-detail-title{display:flex;align-items:center;gap:10px;color:var(--navy);font-size:16px;font-weight:900;margin-bottom:10px}.model-detail-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;background:var(--navy)}
 .model-detail p{margin:0;color:#36566f;font-size:13px;line-height:1.62}
+
+
+/* OFFENSE */
+.offense-board{background:var(--card);border:1px solid var(--line2);padding:16px}
+.offense-row{display:grid;grid-template-columns:42px minmax(190px,1.5fr) 96px 72px 95px 95px;gap:10px;align-items:center;min-height:58px;border-top:1px solid #c6d9e7}
+.offense-row:first-of-type{border-top:0}
+.offense-badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.offense-hot{background:#dfeee6;color:#1d694a}
+.offense-strong{background:#e4eef8;color:#245b86}
+.offense-average{background:#edf1f4;color:#596b79}
+.offense-cold{background:#f3e6e8;color:#a43b48}
+@media(max-width:850px){.offense-row{grid-template-columns:36px minmax(145px,1fr) 82px 64px}.offense-hide{display:none}}
+@media(max-width:520px){.offense-row{grid-template-columns:34px minmax(120px,1fr) 70px}.offense-hide-small{display:none}.offense-row>div:nth-child(4){display:none}}
 
 /* MOVEMENT */
 .movement-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 18px}.move-card{background:var(--card);border:1px solid var(--line2);padding:14px;min-height:108px}
@@ -1826,7 +1848,7 @@ st.html(
     <div class="brand-sub">2026 MLB Postseason Contender Rankings</div></div>
     <div class="brand-meta">Through {latest_game_label}<br>{completed_games:,} completed games · 30 teams</div></div></div>''')
 
-nav = ["Home", "Rankings", "Teams", "Rotations", "Bullpens", "Movement", "Model"]
+nav = ["Home", "Rankings", "Teams", "Rotations", "Bullpens", "Offense", "Movement", "Model"]
 
 requested_page = st.query_params.get("page", "Home")
 if isinstance(requested_page, list):
@@ -1866,7 +1888,7 @@ if page == "Home":
     st.html(
         '''<div class="hero"><div class="eyebrow">LIVE 2026 MODEL</div>
         <h1>Which MLB teams are built best for October?</h1>
-        <p>October Shift ranks all 30 clubs using recent form, run differential, opponent-adjusted results, starting rotation strength and bullpen performance.</p>
+        <p>October Shift ranks all 30 clubs using recent form, offensive momentum, run differential, opponent-adjusted results, starting rotation strength and bullpen performance.</p>
         <div class="note">The October Shift Score is a relative contender rating, not a World Series probability.</div></div>''')
     st.html('<div class="section">Top Contenders</div>')
     cols = st.columns(4)
@@ -1882,7 +1904,7 @@ if page == "Home":
     st.html('<div class="section">Explore</div>')
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.html('<div class="feature"><h3>Full Rankings</h3><p>Compare all 30 teams by score, record, recent form, rotation and bullpen rank.</p></div>')
+        st.html('<div class="feature"><h3>Full Rankings</h3><p>Compare all 30 teams by score, record, recent form, offense, rotation and bullpen rank.</p></div>')
         if st.button("View Rankings", key="go_rank"):
             st.session_state.page = "Rankings"; st.rerun()
     with c2:
@@ -1898,7 +1920,7 @@ if page == "Home":
 
 elif page == "Rankings":
     st.html('<div class="page-title">MLB Contender Rankings</div>')
-    st.html('<div class="deck">The full 30-team board. Rotation and bullpen ranks are shown separately so you can see where each team is strong or vulnerable.</div>')
+    st.html('<div class="deck">The full 30-team board. Rotation, bullpen and offensive momentum are tracked separately so you can see where each team is strong or vulnerable.</div>')
     league = st.radio("League", ["All MLB", "National League", "American League"], horizontal=True)
     view = board
     if league == "National League": view = board[board["league"] == "NL"]
@@ -1907,7 +1929,7 @@ elif page == "Rankings":
 
 elif page == "Teams":
     st.html('<div class="page-title">Team Breakdown</div>')
-    st.html('<div class="deck">Choose any team to see exactly what is helping its October profile, what is holding it back, and how its pitching compares with MLB.</div>')
+    st.html('<div class="deck">Choose any team to see exactly what is helping its October profile, what is holding it back, and how its pitching and offense compare with MLB.</div>')
     selected = st.selectbox("Choose a team", board["team"].tolist())
     t = board[board["team"] == selected].iloc[0]
     move, move_class = movement_for_team(selected)
@@ -1922,7 +1944,9 @@ elif page == "Teams":
         <div class="stat-card"><div class="stat-value">{run_diff_text(t['run_diff_per_game'])}</div><div class="stat-label">Run Differential / Game</div></div>
         <div class="stat-card"><div class="stat-value">{t['quality_weighted_win_pct']:.3f}</div><div class="stat-label">Quality-Adjusted Win Rate</div></div>
         <div class="stat-card"><div class="stat-value">{rank_text(t['projected_rotation_rank'])}</div><div class="stat-label">Starting Rotation Rank</div></div>
-        <div class="stat-card"><div class="stat-value">{rank_text(t['bullpen_rank'])}</div><div class="stat-label">Bullpen Rank</div></div></div>''')
+        <div class="stat-card"><div class="stat-value">{rank_text(t['bullpen_rank'])}</div><div class="stat-label">Bullpen Rank</div></div>
+        <div class="stat-card"><div class="stat-value">{rank_text(t['offensive_momentum_rank'])}</div><div class="stat-label">Offensive Momentum Rank</div></div>
+        <div class="stat-card"><div class="stat-value">{t['offensive_momentum_score']:.1f}</div><div class="stat-label">Offensive Momentum Score</div></div></div>''')
     strengths, drags = get_component_explanation(t)
     strengths_html = "".join([f'<div class="why-item"><div class="why-label">{x[0]}</div><div class="why-detail">{component_detail(x[0],t)}</div></div>' for x in strengths])
     drags_html = "".join([f'<div class="why-item"><div class="why-label">{x[0]}</div><div class="why-detail">{component_detail(x[0],t)}</div></div>' for x in drags])
@@ -1931,6 +1955,21 @@ elif page == "Teams":
         f'''<div class="why-grid"><div class="why-card good"><div class="why-title">Biggest Strengths</div>{strengths_html}</div>
         <div class="why-card bad"><div class="why-title">Biggest Drags</div>{drags_html}</div></div>
         <div class="bottom-line"><strong>Bottom line:</strong> {selected} ranks #{safe_int(t['rank'])} because its strongest model signals are {strengths[0][0].lower()} and {strengths[1][0].lower()}, while {drags[0][0].lower()} and {drags[1][0].lower()} are currently pulling the score down.</div>''')
+    st.html('<div class="section">Offensive Momentum</div>')
+    st.html(
+        f'''<div class="pitch-panel">
+        <div class="pitch-head">
+            <div class="pitch-title">Current Offensive Form</div>
+            <div class="pitch-rank">{rank_text(t['offensive_momentum_rank'])} MLB</div>
+        </div>
+        <div class="pitch-summary">
+            <div class="stat-card"><div class="stat-value">{t['offensive_momentum_score']:.1f}</div><div class="stat-label">Momentum Score</div></div>
+            <div class="stat-card"><div class="stat-value">{t['offense_level']}</div><div class="stat-label">Current Level</div></div>
+            <div class="stat-card"><div class="stat-value">{t['offense_direction']}</div><div class="stat-label">Direction</div></div>
+            <div class="stat-card"><div class="stat-value">{t['last_15_offense_score']:.1f}</div><div class="stat-label">Last 15 Offense</div></div>
+        </div>
+        <div class="pitch-note">Offensive Momentum emphasizes how dangerous a lineup looks right now. It blends the last 15 games, the last 7 games and the change from the club's season baseline. It is 15% of the October Shift Score.</div>
+        </div>''')
     rotation_names = [t.get("starter_1",""), t.get("starter_2",""), t.get("starter_3",""), t.get("starter_4","")]
     rotation_names = [str(x).strip() for x in rotation_names if pd.notna(x) and str(x).strip()]
     rotation_cards = [player_card(name, "Ace" if i == 0 else f"Starter {i+1}") for i, name in enumerate(rotation_names)]
@@ -2014,6 +2053,63 @@ elif page == "Bullpens":
             f'''<div class="board-row"><div class="rank-num">{safe_int(row['bullpen_rank'])}</div>
             <div class="team-cell">{logo_html(row['team'],'rank-logo')}<div><div class="team-name">{row['team']}</div><div class="team-meta">Strand rate {row['strand_rate']:.1%}</div></div></div>
             <div class="player-inline">{photo}<div class="rank-stat">{best}</div></div><div class="rank-stat">Top 5 {row['top_5_run_prevention']:.1f}</div><div class="rank-score">{row['neutral_bullpen_score']:.1f}</div></div>''')
+
+
+elif page == "Offense":
+    st.html('<div class="page-title">Offensive Momentum</div>')
+    st.html(
+        "<div class=\"deck\">This board is about how dangerous each lineup looks right now, not which offense has been best all season. "
+        "The score emphasizes the last 15 games, checks the last 7 for a more immediate signal, and compares recent form with the team\'s season baseline.</div>"
+    )
+
+    offense_view = board.sort_values(
+        ["offensive_momentum_rank", "team"]
+    ).copy()
+
+    hottest = offense_view.iloc[0]
+    biggest_rebound = offense_view.sort_values("trend_raw", ascending=False).iloc[0]
+    coldest = offense_view.iloc[-1]
+
+    st.html(
+        '<div class="movement-summary">'
+        f'<div class="move-card"><div class="move-card-label">Hottest Offense</div><div class="move-card-value">{hottest["team"]}</div><div class="move-card-sub">#{safe_int(hottest["offensive_momentum_rank"])} · {hottest["offensive_momentum_score"]:.1f}</div></div>'
+        f'<div class="move-card"><div class="move-card-label">Best Recent Trend</div><div class="move-card-value">{biggest_rebound["team"]}</div><div class="move-card-sub">{biggest_rebound["trend_raw"]:+.1f} vs season baseline</div></div>'
+        f'<div class="move-card"><div class="move-card-label">Current Level</div><div class="move-card-value">{hottest["offense_level"]}</div><div class="move-card-sub">{hottest["offense_direction"]}</div></div>'
+        f'<div class="move-card"><div class="move-card-label">Coldest Offense</div><div class="move-card-value">{coldest["team"]}</div><div class="move-card-sub">#{safe_int(coldest["offensive_momentum_rank"])} · {coldest["offensive_momentum_score"]:.1f}</div></div>'
+        '</div>'
+    )
+
+    rows = []
+    for _, row in offense_view.iterrows():
+        logo = team_logo(row["team"])
+        logo_tag = f'<img class="move-team-logo" src="{logo}" alt="{row["team"]}">' if logo else '<div class="move-team-logo"></div>'
+
+        level = str(row["offense_level"])
+        level_class = (
+            "offense-hot" if level == "HOT"
+            else "offense-strong" if level == "STRONG"
+            else "offense-average" if level == "AVERAGE"
+            else "offense-cold"
+        )
+
+        rows.append(
+            f'<div class="offense-row">'
+            f'<div class="move-rank">#{safe_int(row["offensive_momentum_rank"])}</div>'
+            f'<div class="move-team">{logo_tag}<div><div class="move-team-name">{row["team"]}</div><div class="team-meta">{row["offense_direction"]}</div></div></div>'
+            f'<div><span class="offense-badge {level_class}">{row["offense_level"]}</span></div>'
+            f'<div class="move-rank">{row["offensive_momentum_score"]:.1f}</div>'
+            f'<div class="rank-stat offense-hide">{row["last_15_offense_score"]:.1f} <span class="team-meta">L15</span></div>'
+            f'<div class="rank-stat offense-hide offense-hide-small">{row["last_7_offense_score"]:.1f} <span class="team-meta">L7</span></div>'
+            f'</div>'
+        )
+
+    st.html(
+        '<div class="offense-board">'
+        '<div class="move-chart-title">All 30 Offenses</div>'
+        '<div class="move-chart-note">Momentum rank · current level · momentum score · last 15 · last 7</div>'
+        + ''.join(rows) +
+        '</div>'
+    )
 
 elif page == "Movement":
     st.html('<div class="page-title">Ranking Movement</div>')
@@ -2121,7 +2217,7 @@ elif page == "Model":
         '<div class="model-intro">'
         'I built October Shift to look at more than the standings. '
         'The question I wanted to answer was simple: which teams look strongest for October based on how they are playing now, '
-        'how much they are outscoring opponents, and what their starting rotation and bullpen look like?'
+        'how much they are outscoring opponents, whether the offense is heating up or cooling down, and what their starting rotation and bullpen look like?'
         '</div>'
     )
 
@@ -2150,7 +2246,7 @@ elif page == "Model":
         '<div class="meaning-list">'
         f'<div class="meaning-item"><div class="meaning-icon">{icon_img("score",19)}</div><div class="meaning-copy">The October Shift Score is <strong>not</strong> a World Series probability. It is a way to compare all 30 teams using the same factors.</div></div>'
         f'<div class="meaning-item"><div class="meaning-icon">{icon_img("up",19)}</div><div class="meaning-copy">A higher score means a team is grading well in more of the areas I am looking at. It also makes it easier to see why teams with similar records can have different postseason profiles.</div></div>'
-        f'<div class="meaning-item"><div class="meaning-icon">{icon_img("rotation",19)}</div><div class="meaning-copy">Starting rotation and bullpen stay separate on purpose. A team can be excellent in one and weaker in the other.</div></div>'
+        f'<div class="meaning-item"><div class="meaning-icon">{icon_img("rotation",19)}</div><div class="meaning-copy">Starting rotation, bullpen and offensive momentum stay separate on purpose. A team can be excellent in one area and weaker in another.</div></div>'
         '</div></div></div>'
     )
 
@@ -2158,6 +2254,7 @@ elif page == "Model":
         '<div class="model-detail-grid">'
         f'<div class="model-detail"><div class="model-detail-title"><div class="model-detail-icon">{icon_img("rotation",19)}</div><span>Starting Pitching</span></div><p>I look at run prevention and how often starters have worked deep enough to give their team a strong outing. From there, I build a projected four-man postseason rotation and score the ace, top three, top four and depth.</p></div>'
         f'<div class="model-detail"><div class="model-detail-title"><div class="model-detail-icon">{icon_img("bullpen",19)}</div><span>Bullpen</span></div><p>I use actual relief innings and runs allowed, then look at the strength of the best relievers as a group. I also track inherited runners because getting out of another pitcher\'s jam matters in a postseason bullpen. Smaller samples are pulled back toward league average.</p></div>'
+        f'<div class="model-detail"><div class="model-detail-title"><div class="model-detail-icon">{icon_img("offense",19)}</div><span>Offensive Momentum</span></div><p>I score how dangerous the offense looks right now. The biggest piece is the last 15 games, with the last 7 adding a more immediate signal and the team\'s season baseline showing whether the lineup is heating up, cooling down or rebounding.</p></div>'
         f'<div class="model-detail"><div class="model-detail-title"><div class="model-detail-icon">{icon_img("record",19)}</div><span>What It Does Not Know</span></div><p>The model cannot know who will be healthy in October, how a team will set its playoff roster, or how a specific matchup will play out. It is meant to be a live snapshot of how teams look based on the 2026 data available right now.</p></div>'
         '</div>'
     )

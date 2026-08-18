@@ -44,6 +44,15 @@ PIPELINE = [
     ),
 
     # =====================================================
+    # OFFENSIVE MOMENTUM
+    # =====================================================
+
+    (
+        "Building offensive momentum",
+        "src/build_offensive_momentum.py",
+    ),
+
+    # =====================================================
     # STARTING PITCHING
     # =====================================================
 
@@ -254,7 +263,7 @@ def main():
     print()
 
     print(
-        "Updating games, Statcast, rotations, "
+        "Updating games, Statcast, offense, rotations, "
         "bullpens and contender rankings..."
     )
 
@@ -378,6 +387,19 @@ def main():
         / "data"
         / "processed"
         / "bullpen_scores_2026.csv"
+    )
+
+    print()
+
+    print(
+        "Latest offensive momentum board:"
+    )
+
+    print(
+        PROJECT_ROOT
+        / "data"
+        / "processed"
+        / "offensive_momentum_2026.csv"
     )
 
     print()

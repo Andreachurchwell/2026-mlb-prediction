@@ -30,6 +30,13 @@ BULLPEN_FILE = (
     / "bullpen_scores_2026.csv"
 )
 
+OFFENSE_FILE = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "offensive_momentum_2026.csv"
+)
+
 OUTPUT_FILE = (
     PROJECT_ROOT
     / "data"
@@ -57,12 +64,14 @@ POST_ASB_WEIGHT = 1.0
 # Starting rotation:        20%
 # Bullpen:                   5%
 #
-# Team performance = 75%
+# Offensive momentum = 15%
+#
+# Team performance = 60%
 #
 # Run differential:        20%
-# Post-ASB performance:    20%
-# Last 10 games:           15%
-# Quality-weighted wins:   10%
+# Post-ASB performance:    15%
+# Last 10 games:           10%
+# Quality-weighted wins:    5%
 # Overall record:          10%
 #
 # TOTAL:                   100%
@@ -70,11 +79,12 @@ POST_ASB_WEIGHT = 1.0
 
 ROTATION_WEIGHT = 0.20
 BULLPEN_WEIGHT = 0.05
+OFFENSE_WEIGHT = 0.15
 
 RUN_DIFF_WEIGHT = 0.20
-POST_ASB_WEIGHT_SCORE = 0.20
-LAST_10_WEIGHT = 0.15
-QUALITY_WEIGHT = 0.10
+POST_ASB_WEIGHT_SCORE = 0.15
+LAST_10_WEIGHT = 0.10
+QUALITY_WEIGHT = 0.05
 OVERALL_RECORD_WEIGHT = 0.10
 
 
@@ -118,6 +128,15 @@ def load_bullpen_scores():
     )
 
     return bullpen
+
+
+def load_offense_scores():
+
+    offense = pd.read_csv(
+        OFFENSE_FILE
+    )
+
+    return offense
 
 
 # =========================================================
@@ -433,6 +452,7 @@ def build_contender_scores(
     team_metrics,
     rotation_scores,
     bullpen_scores,
+    offense_scores,
 ):
 
     # --------------------------------
@@ -465,6 +485,42 @@ def build_contender_scores(
     df = df.merge(
         bullpen_scores[
             bullpen_columns
+        ],
+        on="team",
+        how="left",
+    )
+
+    # --------------------------------
+    # MERGE OFFENSIVE MOMENTUM
+    # --------------------------------
+
+    offense_columns = [
+        "team",
+        "offensive_momentum_rank",
+        "offensive_momentum_score",
+        "offense_level",
+        "offense_direction",
+        "season_offense_score",
+        "last_15_offense_score",
+        "last_7_offense_score",
+        "last_15_runs_per_game",
+        "last_15_ops",
+        "last_15_iso",
+        "last_15_walk_rate",
+        "last_15_strikeout_rate",
+        "trend_raw",
+        "acceleration_raw",
+    ]
+
+    available_offense_columns = [
+        column
+        for column in offense_columns
+        if column in offense_scores.columns
+    ]
+
+    df = df.merge(
+        offense_scores[
+            available_offense_columns
         ],
         on="team",
         how="left",
@@ -514,6 +570,28 @@ def build_contender_scores(
         )
     )
 
+    # --------------------------------
+    # HANDLE MISSING OFFENSE DATA
+    # --------------------------------
+
+    offense_median = (
+        df[
+            "offensive_momentum_score"
+        ]
+        .median()
+    )
+
+    df[
+        "offensive_momentum_score"
+    ] = (
+        df[
+            "offensive_momentum_score"
+        ]
+        .fillna(
+            offense_median
+        )
+    )
+
     # =====================================================
     # NORMALIZED COMPONENT SCORES
     # =====================================================
@@ -530,6 +608,14 @@ def build_contender_scores(
         normalize(
             df[
                 "neutral_bullpen_score"
+            ]
+        )
+    )
+
+    df["offense_component"] = (
+        normalize(
+            df[
+                "offensive_momentum_score"
             ]
         )
     )
@@ -580,10 +666,11 @@ def build_contender_scores(
     #
     # 20% Starting Rotation
     #  5% Bullpen
+    # 15% Offensive Momentum
     # 20% Run Differential
-    # 20% Post-ASB Performance
-    # 15% Last 10 Games
-    # 10% Quality-Weighted Wins
+    # 15% Post-ASB Performance
+    # 10% Last 10 Games
+    #  5% Quality-Weighted Wins
     # 10% Overall Record
     #
     # TOTAL = 100%
@@ -598,6 +685,11 @@ def build_contender_scores(
 
         df["bullpen_component"]
         * BULLPEN_WEIGHT
+
+        +
+
+        df["offense_component"]
+        * OFFENSE_WEIGHT
 
         +
 
@@ -704,6 +796,19 @@ def main():
     )
 
     # --------------------------------
+    # OFFENSIVE MOMENTUM
+    # --------------------------------
+
+    offense_scores = (
+        load_offense_scores()
+    )
+
+    print(
+        f"Loaded offensive momentum scores "
+        f"for {len(offense_scores):,} teams."
+    )
+
+    # --------------------------------
     # TEAM METRICS
     # --------------------------------
 
@@ -722,6 +827,7 @@ def main():
             team_metrics,
             rotation_scores,
             bullpen_scores,
+            offense_scores,
         )
     )
 
@@ -759,8 +865,12 @@ def main():
         "quality_weighted_win_pct",
         "projected_rotation_rank",
         "bullpen_rank",
+        "offensive_momentum_rank",
         "projected_rotation_score",
         "neutral_bullpen_score",
+        "offensive_momentum_score",
+        "offense_level",
+        "offense_direction",
         "october_shift_score",
     ]
 
@@ -838,6 +948,37 @@ def main():
     )
 
     # =====================================================
+    # TOP OFFENSIVE MOMENTUM
+    # =====================================================
+
+    print(
+        "\nTOP OFFENSIVE MOMENTUM IN CONTENDER BOARD\n"
+    )
+
+    offense_display = [
+        "team",
+        "offensive_momentum_rank",
+        "offensive_momentum_score",
+        "offense_level",
+        "offense_direction",
+        "last_15_runs_per_game",
+        "last_15_ops",
+    ]
+
+    print(
+        board[
+            offense_display
+        ]
+        .sort_values(
+            "offensive_momentum_rank"
+        )
+        .head(10)
+        .to_string(
+            index=False
+        )
+    )
+
+    # =====================================================
     # MODEL WEIGHTS
     # =====================================================
 
@@ -854,19 +995,23 @@ def main():
     )
 
     print(
+        "Offensive Momentum:     15%"
+    )
+
+    print(
         "Run Differential:       20%"
     )
 
     print(
-        "Post-ASB Performance:   20%"
+        "Post-ASB Performance:   15%"
     )
 
     print(
-        "Last 10 Games:          15%"
+        "Last 10 Games:          10%"
     )
 
     print(
-        "Quality-Weighted Wins:  10%"
+        "Quality-Weighted Wins:   5%"
     )
 
     print(
