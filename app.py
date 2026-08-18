@@ -20,6 +20,7 @@ RELIEVER_RUN_FILE = PROJECT_ROOT / "data" / "processed" / "reliever_run_scores_2
 BULLPEN_FILE = PROJECT_ROOT / "data" / "processed" / "bullpen_scores_2026.csv"
 ROTATION_FILE = PROJECT_ROOT / "data" / "processed" / "projected_rotations_2026.csv"
 ASSETS_DIR = PROJECT_ROOT / "assets"
+MLB_LOGO_FILE = ASSETS_DIR / "mlb-logo.png"
 
 TEAM_META = {
     "Baltimore Orioles": {"league": "AL", "division": "East"},
@@ -139,6 +140,9 @@ def image_to_base64(path):
         return ""
     encoded = base64.b64encode(path.read_bytes()).decode("utf-8")
     return f"data:image/png;base64,{encoded}"
+
+
+MLB_LOGO = image_to_base64(MLB_LOGO_FILE)
 
 
 def team_logo(team):
@@ -1840,13 +1844,29 @@ select{
     .page-title{font-size:29px !important}
 }
 
+
+/* MLB LOGO IN TOP BRAND */
+.brand-left{display:flex;align-items:center;gap:18px;min-width:0}
+.brand-mlb-logo{width:86px;height:52px;object-fit:contain;flex:0 0 auto;display:block}
+@media(max-width:700px){.brand-left{gap:12px}.brand-mlb-logo{width:70px;height:44px}}
+@media(max-width:430px){.brand-mlb-logo{width:60px;height:38px}}
+
 </style>
     """)
 
 st.html(
-    f'''<div class="brand"><div class="brand-row"><div><div class="brand-title"><span class="brand-october">October</span> <span class="brand-shift">Shift</span></div>
-    <div class="brand-sub">2026 MLB Postseason Contender Rankings</div></div>
-    <div class="brand-meta">Through {latest_game_label}<br>{completed_games:,} completed games · 30 teams</div></div></div>''')
+    f'''<div class="brand">
+    <div class="brand-row">
+        <div class="brand-left">
+            <img class="brand-mlb-logo" src="{MLB_LOGO}" alt="MLB logo">
+            <div>
+                <div class="brand-title"><span class="brand-october">October</span> <span class="brand-shift">Shift</span></div>
+                <div class="brand-sub">2026 MLB Postseason Contender Rankings</div>
+            </div>
+        </div>
+        <div class="brand-meta">Through {latest_game_label}<br>{completed_games:,} completed games · 30 teams</div>
+    </div>
+    </div>''')
 
 nav = ["Home", "Rankings", "Teams", "Rotations", "Bullpens", "Offense", "Movement", "Model"]
 
