@@ -1851,6 +1851,18 @@ select{
 @media(max-width:700px){.brand-left{gap:12px}.brand-mlb-logo{width:70px;height:44px}}
 @media(max-width:430px){.brand-mlb-logo{width:60px;height:38px}}
 
+/* BULLPEN PAGE — RESPONSIVE */
+@media (max-width:800px){
+.board-row{grid-template-columns:38px minmax(0,1fr) 82px!important;gap:8px!important;padding:11px 10px!important}
+.board-row .team-cell{min-width:0!important}.board-row .rank-logo{width:38px!important;height:38px!important;flex:0 0 38px!important}
+.board-row .team-name{font-size:13px!important;line-height:1.15!important;overflow-wrap:anywhere}.board-row .team-meta{font-size:10px!important;line-height:1.25!important}
+.board-row .player-inline,.board-row>.rank-stat{display:none!important}.board-row>.rank-score{display:block!important;text-align:right!important;font-size:20px!important;white-space:nowrap!important}
+.board-row>.rank-score::after{content:" score";display:block;margin-top:2px;font-size:8px;line-height:1;font-weight:800;text-transform:uppercase;letter-spacing:.3px;color:var(--muted)}
+}
+@media (max-width:520px){
+.board-row{grid-template-columns:30px minmax(0,1fr) 66px!important;gap:6px!important;padding:10px 8px!important}.board-row .rank-num{font-size:16px!important}.board-row .team-cell{gap:7px!important}.board-row .rank-logo{width:32px!important;height:32px!important;flex-basis:32px!important;padding:3px!important}.board-row .team-name{font-size:12px!important}.board-row .team-meta{font-size:9px!important}.board-row>.rank-score{font-size:18px!important}
+}
+
 </style>
     """)
 
