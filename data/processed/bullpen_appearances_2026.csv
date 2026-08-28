@@ -13027,3 +13027,43 @@ game_pk,game_date,pitcher_id,pitcher_name,pitches,first_inning,last_inning,innin
 825039,2026-08-26,666661,"Morillo, Juan",8,9,9,Top,0,2,0,2,home,Arizona Diamondbacks,593958,"Rodriguez, Eduardo",False,0
 825039,2026-08-26,663423,"Thornton, Trent",15,7,7,Bot,0,1,0,1,away,Chicago Cubs,571510,"Boyd, Matthew",False,0
 825039,2026-08-26,666171,"Zeferjahn, Ryan",7,8,8,Bot,0,1,0,2,away,Chicago Cubs,571510,"Boyd, Matthew",False,1
+822694,2026-08-27,675848,"Mejia, Juan",25,6,6,Bot,1,4,1,4,away,Colorado Rockies,687312,"Hughes, Gabriel",False,0
+822694,2026-08-27,693308,"Frasso, Nick",18,7,7,Bot,1,4,1,4,away,Colorado Rockies,687312,"Hughes, Gabriel",False,0
+822694,2026-08-27,623474,"Herget, Jimmy",19,8,8,Bot,1,4,1,7,away,Colorado Rockies,687312,"Hughes, Gabriel",False,3
+822694,2026-08-27,676680,"Cosgrove, Tom",19,5,6,Top,1,3,1,4,home,Washington Nationals,663623,"Irvin, Jake",False,0
+822694,2026-08-27,680899,"Tolman, Erik",20,7,7,Top,1,4,1,4,home,Washington Nationals,663623,"Irvin, Jake",False,0
+822694,2026-08-27,690925,"Beeter, Clayton",16,7,8,Top,1,4,1,4,home,Washington Nationals,663623,"Irvin, Jake",False,0
+822694,2026-08-27,687377,"Ribalta, Orlando",24,9,9,Top,1,7,1,7,home,Washington Nationals,663623,"Irvin, Jake",False,0
+822771,2026-08-27,656638,"Lange, Alex",15,7,7,Bot,10,2,10,2,away,Kansas City Royals,702070,"Cameron, Noah",False,0
+822771,2026-08-27,621016,"Cuas, Jose",9,8,8,Bot,11,2,11,2,away,Kansas City Royals,702070,"Cameron, Noah",False,0
+822771,2026-08-27,543238,"Gose, Anthony",12,9,9,Bot,13,2,13,2,away,Kansas City Royals,702070,"Cameron, Noah",False,0
+822771,2026-08-27,680755,"Fisher, Braydon",23,5,5,Top,4,0,4,0,home,Toronto Blue Jays,681293,"Arrighetti, Spencer",False,0
+822771,2026-08-27,680573,"Woods Richardson, Simeon",39,6,6,Top,4,0,10,0,home,Toronto Blue Jays,681293,"Arrighetti, Spencer",False,6
+822771,2026-08-27,547179,"Lorenzen, Michael",42,7,8,Top,10,2,11,2,home,Toronto Blue Jays,681293,"Arrighetti, Spencer",False,1
+822771,2026-08-27,664702,"Straw, Myles",9,9,9,Top,11,2,13,2,home,Toronto Blue Jays,681293,"Arrighetti, Spencer",False,2
+823014,2026-08-27,676742,"Sanders, Cam",37,6,7,Bot,1,6,4,6,away,Baltimore Orioles,669432,"Rogers, Trevor",False,0
+823014,2026-08-27,689296,"Nunez, Anthony",21,8,8,Bot,5,6,5,7,away,Baltimore Orioles,669432,"Rogers, Trevor",False,1
+823014,2026-08-27,677865,"Bruihl, Justin",41,4,5,Top,0,3,1,5,home,St. Louis Cardinals,700669,"Graceffo, Gordon",False,1
+823014,2026-08-27,703725,"Gastelum, Luis",18,5,6,Top,1,5,1,6,home,St. Louis Cardinals,700669,"Graceffo, Gordon",False,0
+823014,2026-08-27,657571,"Ferguson, Caleb",18,7,7,Top,1,6,4,6,home,St. Louis Cardinals,700669,"Graceffo, Gordon",False,3
+823014,2026-08-27,666277,"Soriano, George",20,8,8,Top,4,6,5,6,home,St. Louis Cardinals,700669,"Graceffo, Gordon",False,1
+823014,2026-08-27,676617,"O'Brien, Riley",11,9,9,Top,5,7,5,7,home,St. Louis Cardinals,700669,"Graceffo, Gordon",False,0
+823179,2026-08-27,664199,"Clarke, Taylor",18,5,6,Bot,1,1,1,2,away,Arizona Diamondbacks,703615,"Cabrera, Jose",False,1
+823179,2026-08-27,642528,"Loáisiga, Jonathan",9,7,7,Bot,1,2,1,2,away,Arizona Diamondbacks,703615,"Cabrera, Jose",False,0
+823179,2026-08-27,656464,"Ginkel, Kevin",25,8,8,Bot,1,2,1,5,away,Arizona Diamondbacks,703615,"Cabrera, Jose",False,3
+823179,2026-08-27,686228,"Burgos, Juan",3,8,8,Bot,1,6,1,6,away,Arizona Diamondbacks,703615,"Cabrera, Jose",False,0
+823179,2026-08-27,805345,"Harris, Trent",23,6,7,Top,1,2,1,2,home,San Francisco Giants,694738,"Roupp, Landen",False,0
+823179,2026-08-27,693313,"Seymour, Carson",19,8,8,Top,1,2,1,2,home,San Francisco Giants,694738,"Roupp, Landen",False,0
+823179,2026-08-27,676254,"Walker, Ryan",19,9,9,Top,1,6,1,6,home,San Francisco Giants,694738,"Roupp, Landen",False,0
+823503,2026-08-27,595345,"Okert, Steven",12,6,6,Bot,3,0,3,1,away,Houston Astros,669713,"Wesneski, Hayden",False,1
+823503,2026-08-27,805123,"Blubaugh, AJ",32,7,8,Bot,4,1,5,1,away,Houston Astros,669713,"Wesneski, Hayden",False,0
+823503,2026-08-27,623352,"Hader, Josh",8,9,9,Bot,5,1,5,1,away,Houston Astros,669713,"Wesneski, Hayden",False,0
+823503,2026-08-27,660787,"De los Santos, Yerry",14,7,7,Top,3,1,4,1,home,New York Yankees,543037,"Cole, Gerrit",False,1
+823503,2026-08-27,623437,"Topa, Justin",34,8,9,Top,4,1,5,1,home,New York Yankees,543037,"Cole, Gerrit",False,1
+823581,2026-08-27,622608,"Senzatela, Antonio",27,7,7,Bot,6,2,6,2,away,Milwaukee Brewers,694819,"Misiorowski, Jacob",False,0
+823581,2026-08-27,669084,"Hall, DL",12,8,8,Bot,8,2,8,2,away,Milwaukee Brewers,694819,"Misiorowski, Jacob",False,0
+823581,2026-08-27,694477,"Patrick, Chad",9,9,9,Bot,8,2,8,2,away,Milwaukee Brewers,694819,"Misiorowski, Jacob",False,0
+823581,2026-08-27,675540,"Curry, Xzavion",47,6,8,Top,6,2,8,2,home,New York Mets,640455,"Manaea, Sean",False,2
+823581,2026-08-27,681810,"Warren, Austin",26,9,9,Top,8,2,8,2,home,New York Mets,640455,"Manaea, Sean",False,0
+824879,2026-08-27,676263,"Dreyer, Jack",4,7,7,Bot,0,1,0,1,away,Los Angeles Dodgers,808967,"Yamamoto, Yoshinobu",False,0
+824879,2026-08-27,683618,"Henriquez, Edgardo",13,8,8,Bot,0,1,0,1,away,Los Angeles Dodgers,808967,"Yamamoto, Yoshinobu",False,0
