@@ -1937,16 +1937,16 @@ if page == "Home":
     c1, c2, c3 = st.columns(3)
     with c1:
         st.html('<div class="feature"><h3>Full Rankings</h3><p>Compare all 30 teams by score, record, recent form, offense, rotation and bullpen rank.</p></div>')
-        if st.button("View Rankings", key="go_rank"):
-            st.session_state.page = "Rankings"; st.rerun()
+        # if st.button("View Rankings", key="go_rank"):
+        #     st.session_state.page = "Rankings"; st.rerun()
     with c2:
         st.html('<div class="feature"><h3>Team Breakdowns</h3><p>See why each team ranks where it does and which factors are helping or hurting.</p></div>')
-        if st.button("Explore Teams", key="go_team"):
-            st.session_state.page = "Teams"; st.rerun()
+        # if st.button("Explore Teams", key="go_team"):
+        #     st.session_state.page = "Teams"; st.rerun()
     with c3:
         st.html('<div class="feature"><h3>Pitching Rankings</h3><p>Compare projected postseason rotations and bullpens across MLB.</p></div>')
-        if st.button("View Rotations", key="go_pitch"):
-            st.session_state.page = "Rotations"; st.rerun()
+        # if st.button("View Rotations", key="go_pitch"):
+        #     st.session_state.page = "Rotations"; st.rerun()
     st.html('<div class="section">Top 10 Snapshot</div>')
     render_rankings(board.head(10))
 
