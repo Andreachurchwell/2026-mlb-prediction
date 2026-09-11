@@ -14316,3 +14316,30 @@ game_pk,game_date,pitcher_id,pitcher_name,pitches,first_inning,last_inning,innin
 824956,2026-09-09,573009,"Mantiply, Joe",8,5,6,Bot,0,2,0,2,away,Toronto Blue Jays,680755,"Fisher, Braydon",False,0
 824956,2026-09-09,643511,"Rogers, Tyler",20,7,7,Bot,0,2,0,2,away,Toronto Blue Jays,680755,"Fisher, Braydon",False,0
 824956,2026-09-09,686973,"Varland, Louis",18,8,8,Bot,0,2,0,2,away,Toronto Blue Jays,680755,"Fisher, Braydon",False,0
+823088,2026-09-10,642100,"Speier, Gabe",9,8,8,Top,3,4,3,4,home,Seattle Mariners,669302,"Gilbert, Logan",False,0
+823088,2026-09-10,662253,"Muñoz, Andrés",25,9,9,Top,3,4,3,4,home,Seattle Mariners,669302,"Gilbert, Logan",False,0
+823088,2026-09-10,596001,"Junis, Jakob",10,7,7,Bot,3,0,3,4,away,Texas Rangers,594798,"deGrom, Jacob",False,4
+823088,2026-09-10,676395,"Garcia, Robert",9,7,7,Bot,3,4,3,4,away,Texas Rangers,594798,"deGrom, Jacob",False,0
+823088,2026-09-10,695239,"Ahlstrom, Robby",24,8,8,Bot,3,4,3,4,away,Texas Rangers,594798,"deGrom, Jacob",False,0
+823413,2026-09-10,656986,"Sousa, Bennett",14,7,7,Bot,1,1,1,1,away,Houston Astros,664299,"Javier, Cristian",False,0
+823413,2026-09-10,650556,"Abreu, Bryan",10,8,8,Bot,1,1,1,1,away,Houston Astros,664299,"Javier, Cristian",False,0
+823413,2026-09-10,623352,"Hader, Josh",8,9,9,Bot,2,1,2,1,away,Houston Astros,664299,"Javier, Cristian",False,0
+823413,2026-09-10,621237,"Alvarado, José",20,8,8,Top,1,1,1,1,home,Philadelphia Phillies,554430,"Wheeler, Zack",False,0
+823413,2026-09-10,661395,"Duran, Jhoan",17,9,9,Top,1,1,2,1,home,Philadelphia Phillies,554430,"Wheeler, Zack",False,1
+823499,2026-09-10,688642,"Agnos, Zach",45,6,7,Bot,1,4,2,6,away,Colorado Rockies,663372,"Feltner, Ryan",False,2
+823499,2026-09-10,623474,"Herget, Jimmy",24,7,8,Bot,2,6,3,10,away,Colorado Rockies,663372,"Feltner, Ryan",False,4
+823499,2026-09-10,605242,"Fulmer, Michael",9,4,4,Top,1,4,1,4,home,New York Yankees,608331,"Fried, Max",False,0
+823499,2026-09-10,670167,"Schreiber, John",13,5,6,Top,1,4,1,4,home,New York Yankees,608331,"Fried, Max",False,0
+823499,2026-09-10,642232,"Yarbrough, Ryan",29,6,7,Top,1,4,1,4,home,New York Yankees,608331,"Fried, Max",False,0
+823499,2026-09-10,687396,"Headrick, Brent",8,7,7,Top,2,4,2,4,home,New York Yankees,608331,"Fried, Max",False,0
+823499,2026-09-10,661563,"Gil, Luis",41,8,9,Top,2,10,3,10,home,New York Yankees,608331,"Fried, Max",False,1
+824550,2026-09-10,607200,"Fedde, Erick",81,3,8,Top,0,0,1,0,home,Chicago White Sox,696146,"Smith, Hagen",False,1
+824550,2026-09-10,663542,"Hudson, Bryan",9,8,8,Top,1,0,2,0,home,Chicago White Sox,696146,"Smith, Hagen",False,1
+824550,2026-09-10,663855,"Hicks, Jordan",16,9,9,Top,2,0,2,0,home,Chicago White Sox,696146,"Smith, Hagen",False,0
+824550,2026-09-10,596133,"Weaver, Luke",15,8,8,Bot,2,0,2,0,away,Pittsburgh Pirates,683003,"Jones, Jared",False,0
+824550,2026-09-10,682254,"Montgomery, Mason",14,9,9,Bot,2,0,2,0,away,Pittsburgh Pirates,683003,"Jones, Jared",False,0
+824872,2026-09-10,800311,"Fuentes, Didier",9,8,8,Top,0,0,0,0,home,Atlanta Braves,527048,"Pérez, Martín",False,0
+824872,2026-09-10,628452,"Iglesias, Raisel",23,9,9,Top,0,3,1,3,home,Atlanta Braves,527048,"Pérez, Martín",False,1
+824872,2026-09-10,592155,"Booser, Cam",7,7,7,Bot,0,0,0,0,away,Tampa Bay Rays,607259,"Martinez, Nick",False,0
+824872,2026-09-10,668984,"Legumina, Casey",4,8,8,Bot,0,3,0,3,away,Tampa Bay Rays,607259,"Martinez, Nick",False,0
+824872,2026-09-10,687330,"Kelly, Kevin",23,8,8,Bot,0,0,0,3,away,Tampa Bay Rays,607259,"Martinez, Nick",False,3
