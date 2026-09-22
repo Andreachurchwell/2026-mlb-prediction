@@ -15308,3 +15308,21 @@ game_pk,game_date,pitcher_id,pitcher_name,pitches,first_inning,last_inning,innin
 825028,2026-09-20,657612,"Hill, Tim",7,6,6,Bot,4,6,4,6,away,New York Yankees,701542,"Warren, Will",False,0
 825028,2026-09-20,670167,"Schreiber, John",18,7,7,Bot,4,6,4,8,away,New York Yankees,701542,"Warren, Will",False,2
 825028,2026-09-20,661563,"Gil, Luis",15,8,8,Bot,4,8,4,8,away,New York Yankees,701542,"Warren, Will",False,0
+823169,2026-09-21,573124,"Rogers, Taylor",25,6,7,Bot,1,5,1,5,away,Minnesota Twins,805673,"Matthews, Zebby",False,0
+823169,2026-09-21,701519,"Adams, Travis",20,7,8,Bot,1,5,2,5,away,Minnesota Twins,805673,"Matthews, Zebby",False,0
+823169,2026-09-21,663941,"Beck, Tristan",32,4,6,Top,1,4,1,5,home,San Francisco Giants,694918,"Tidwell, Blade",False,0
+823169,2026-09-21,656529,"Hentges, Sam",20,7,7,Top,1,5,1,5,home,San Francisco Giants,694918,"Tidwell, Blade",False,0
+823169,2026-09-21,671345,"Foley, Jason",9,8,8,Top,2,5,2,5,home,San Francisco Giants,694918,"Tidwell, Blade",False,0
+823169,2026-09-21,805345,"Harris, Trent",16,9,9,Top,2,5,2,5,home,San Francisco Giants,694918,"Tidwell, Blade",False,0
+824221,2026-09-21,672456,"Montero, Keider",58,4,7,Top,0,2,0,9,home,Detroit Tigers,689981,"Ryan, River",False,0
+824221,2026-09-21,805427,"Sommers, Drew",16,8,8,Top,0,9,2,9,home,Detroit Tigers,689981,"Ryan, River",False,2
+824221,2026-09-21,689225,"Brieske, Beau",9,9,9,Top,2,9,2,9,home,Detroit Tigers,689981,"Ryan, River",False,0
+824221,2026-09-21,691384,"Perales, Luis",47,5,6,Bot,0,4,0,9,away,Washington Nationals,687792,"Herz, DJ",False,5
+824221,2026-09-21,680686,"Gray, Josiah",32,7,8,Bot,0,9,2,9,away,Washington Nationals,687792,"Herz, DJ",False,0
+824787,2026-09-21,666974,"Cano, Yennier",18,7,8,Top,3,2,3,2,home,Baltimore Orioles,669358,"Baz, Shane",False,0
+824787,2026-09-21,670329,"Garcia, Rico",17,9,9,Top,3,4,3,4,home,Baltimore Orioles,669358,"Baz, Shane",False,0
+824787,2026-09-21,676454,"Cellucci, Brendan",15,3,4,Bot,3,1,3,1,away,Toronto Blue Jays,702056,"Yesavage, Trey",False,0
+824787,2026-09-21,689149,"Dallas, Chad",34,4,6,Bot,3,1,3,2,away,Toronto Blue Jays,702056,"Yesavage, Trey",False,1
+824787,2026-09-21,692064,"Rodríguez, José",9,7,7,Bot,3,2,3,2,away,Toronto Blue Jays,702056,"Yesavage, Trey",False,0
+824787,2026-09-21,643511,"Rogers, Tyler",11,8,8,Bot,3,2,3,4,away,Toronto Blue Jays,702056,"Yesavage, Trey",False,2
+824787,2026-09-21,689254,"Fluharty, Mason",14,8,8,Bot,3,2,3,2,away,Toronto Blue Jays,702056,"Yesavage, Trey",False,0
