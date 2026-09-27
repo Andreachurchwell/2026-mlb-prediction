@@ -15737,3 +15737,109 @@ game_pk,game_date,pitcher_id,pitcher_name,pitches,first_inning,last_inning,innin
 824947,2026-09-25,805123,"Blubaugh, AJ",15,6,6,Bot,1,3,1,6,away,Houston Astros,686613,"Brown, Hunter",False,3
 824947,2026-09-25,701121,"VanWey, Logan",34,7,8,Bot,2,6,5,6,away,Houston Astros,686613,"Brown, Hunter",False,0
 824947,2026-09-25,681973,"Hendrickson, Josh",4,8,8,Bot,5,6,5,6,away,Houston Astros,686613,"Brown, Hunter",False,0
+822678,2026-09-26,673380,"Núñez, Dedniel",12,6,6,Bot,0,1,0,1,away,New York Mets,804636,"Tong, Jonah",False,0
+822678,2026-09-26,681320,"Lavender, Nate",13,7,7,Bot,4,1,4,1,away,New York Mets,804636,"Tong, Jonah",False,0
+822678,2026-09-26,642207,"Williams, Devin",18,8,8,Bot,5,1,5,1,away,New York Mets,804636,"Tong, Jonah",False,0
+822678,2026-09-26,668964,"Myers, Tobias",14,9,9,Bot,7,1,7,1,away,New York Mets,804636,"Tong, Jonah",False,0
+822678,2026-09-26,663623,"Irvin, Jake",101,4,8,Top,0,1,5,1,home,Washington Nationals,813349,"Early, Connelly",False,5
+822678,2026-09-26,663992,"Lovelady, Richard",29,9,9,Top,5,1,7,1,home,Washington Nationals,813349,"Early, Connelly",False,2
+822759,2026-09-26,683175,"Phillips, Connor",21,7,7,Bot,5,0,5,1,away,Cincinnati Reds,695076,"Lowder, Rhett",False,1
+822759,2026-09-26,668933,"Ashcraft, Graham",11,8,8,Bot,5,1,5,1,away,Cincinnati Reds,695076,"Lowder, Rhett",False,0
+822759,2026-09-26,622088,"Antone, Tejay",10,9,9,Bot,5,1,5,1,away,Cincinnati Reds,695076,"Lowder, Rhett",False,0
+822759,2026-09-26,693686,"Miles, Spencer",28,3,3,Top,1,0,3,0,home,Toronto Blue Jays,702056,"Yesavage, Trey",False,2
+822759,2026-09-26,680755,"Fisher, Braydon",19,4,4,Top,3,0,3,0,home,Toronto Blue Jays,702056,"Yesavage, Trey",False,0
+822759,2026-09-26,804619,"Klein, John",66,5,8,Top,3,0,5,1,home,Toronto Blue Jays,702056,"Yesavage, Trey",False,2
+822759,2026-09-26,663893,"Little, Brendon",7,9,9,Top,5,1,5,1,home,Toronto Blue Jays,702056,"Yesavage, Trey",False,0
+823083,2026-09-26,676620,"Weiman, Blake",20,6,6,Bot,4,4,4,4,away,Los Angeles Angels,696270,"Johnson, Ryan",False,0
+823083,2026-09-26,815083,"Farris, Mitch",43,7,8,Bot,4,4,4,8,away,Los Angeles Angels,696270,"Johnson, Ryan",False,4
+823083,2026-09-26,621074,"Rucker, Michael",33,4,5,Top,0,1,0,2,home,Seattle Mariners,807739,"Anderson, Kade",False,0
+823083,2026-09-26,672841,"Vargas, Carlos",17,6,7,Top,4,4,4,4,home,Seattle Mariners,807739,"Anderson, Kade",False,0
+823083,2026-09-26,678606,"Ferrer, José A.",24,6,6,Top,0,4,3,4,home,Seattle Mariners,807739,"Anderson, Kade",False,3
+823083,2026-09-26,622554,"Domínguez, Seranthony",15,8,8,Top,4,8,4,8,home,Seattle Mariners,807739,"Anderson, Kade",False,0
+823083,2026-09-26,642100,"Speier, Gabe",14,9,9,Top,4,8,4,8,home,Seattle Mariners,807739,"Anderson, Kade",False,0
+823165,2026-09-26,681911,"Vesia, Alex",13,5,5,Bot,3,1,3,1,away,Los Angeles Dodgers,605483,"Snell, Blake",False,0
+823165,2026-09-26,663460,"Bubic, Kris",12,6,6,Bot,3,1,3,1,away,Los Angeles Dodgers,605483,"Snell, Blake",False,0
+823165,2026-09-26,592779,"Stewart, Brock",18,7,7,Bot,3,1,3,2,away,Los Angeles Dodgers,605483,"Snell, Blake",False,1
+823165,2026-09-26,623465,"Phillips, Evan",15,8,8,Bot,3,2,3,3,away,Los Angeles Dodgers,605483,"Snell, Blake",False,1
+823165,2026-09-26,656945,"Scott, Tanner",14,9,9,Bot,4,3,4,3,away,Los Angeles Dodgers,605483,"Snell, Blake",False,0
+823165,2026-09-26,663941,"Beck, Tristan",24,4,5,Top,3,1,3,1,home,San Francisco Giants,683363,"Wilkinson, Matt",False,0
+823165,2026-09-26,701474,"Davitt, Duncan",23,4,4,Top,1,1,2,1,home,San Francisco Giants,683363,"Wilkinson, Matt",False,1
+823165,2026-09-26,693313,"Seymour, Carson",10,6,6,Top,3,1,3,1,home,San Francisco Giants,683363,"Wilkinson, Matt",False,0
+823165,2026-09-26,666808,"Doval, Camilo",16,7,7,Top,3,1,3,1,home,San Francisco Giants,683363,"Wilkinson, Matt",False,0
+823165,2026-09-26,671345,"Foley, Jason",22,8,8,Top,3,2,3,2,home,San Francisco Giants,683363,"Wilkinson, Matt",False,0
+823165,2026-09-26,805345,"Harris, Trent",16,9,9,Top,3,3,4,3,home,San Francisco Giants,683363,"Wilkinson, Matt",False,1
+823245,2026-09-26,642528,"Loáisiga, Jonathan",28,1,3,Bot,0,1,2,2,away,Arizona Diamondbacks,664199,"Clarke, Taylor",False,1
+823245,2026-09-26,656464,"Ginkel, Kevin",14,3,3,Bot,2,2,2,3,away,Arizona Diamondbacks,664199,"Clarke, Taylor",False,1
+823245,2026-09-26,703615,"Cabrera, Jose",40,4,5,Bot,4,3,4,7,away,Arizona Diamondbacks,664199,"Clarke, Taylor",False,4
+823245,2026-09-26,666661,"Morillo, Juan",9,5,5,Bot,4,7,4,8,away,Arizona Diamondbacks,664199,"Clarke, Taylor",False,1
+823245,2026-09-26,642701,"Santana, Dennis",31,6,7,Bot,4,8,4,10,away,Arizona Diamondbacks,664199,"Clarke, Taylor",False,2
+823245,2026-09-26,679885,"Martinez, Justin",16,8,8,Bot,4,10,4,10,away,Arizona Diamondbacks,664199,"Clarke, Taylor",False,0
+823245,2026-09-26,673513,"Matsui, Yuki",4,4,4,Top,4,3,4,3,home,San Diego Padres,621111,"Buehler, Walker",False,0
+823245,2026-09-26,699134,"Rodriguez, Bradgley",34,5,6,Top,4,6,4,8,home,San Diego Padres,621111,"Buehler, Walker",False,0
+823245,2026-09-26,688158,"Morgan, David",19,7,7,Top,4,10,4,10,home,San Diego Padres,621111,"Buehler, Walker",False,0
+823245,2026-09-26,670970,"Morejon, Adrian",16,8,8,Top,4,10,4,10,home,San Diego Padres,621111,"Buehler, Walker",False,0
+823245,2026-09-26,695243,"Miller, Mason",24,9,9,Top,4,10,7,10,home,San Diego Padres,621111,"Buehler, Walker",False,3
+823407,2026-09-26,621383,"Banks, Tanner",21,2,3,Top,3,0,3,0,home,Philadelphia Phillies,605400,"Nola, Aaron",False,0
+823407,2026-09-26,663767,"Shugart, Chase",29,3,5,Top,3,0,3,0,home,Philadelphia Phillies,605400,"Nola, Aaron",False,0
+823407,2026-09-26,621237,"Alvarado, José",21,5,5,Top,3,0,5,0,home,Philadelphia Phillies,605400,"Nola, Aaron",False,2
+823407,2026-09-26,664353,"Urquidy, José",50,5,7,Top,5,0,10,0,home,Philadelphia Phillies,605400,"Nola, Aaron",False,5
+823407,2026-09-26,548384,"Raley, Brooks",11,8,8,Top,10,1,10,1,home,Philadelphia Phillies,605400,"Nola, Aaron",False,0
+823407,2026-09-26,676661,"Lazar, Max",18,9,9,Top,10,1,12,1,home,Philadelphia Phillies,605400,"Nola, Aaron",False,2
+823407,2026-09-26,571927,"Matz, Steven",10,4,4,Bot,3,0,3,0,away,Tampa Bay Rays,643377,"Jax, Griffin",False,0
+823407,2026-09-26,811315,"Hopkins, Brody",16,5,5,Bot,7,0,7,0,away,Tampa Bay Rays,643377,"Jax, Griffin",False,0
+823407,2026-09-26,592155,"Booser, Cam",21,6,6,Bot,10,0,10,0,away,Tampa Bay Rays,643377,"Jax, Griffin",False,0
+823407,2026-09-26,655889,"Rodríguez, Manuel",26,7,7,Bot,10,0,10,1,away,Tampa Bay Rays,643377,"Jax, Griffin",False,1
+823407,2026-09-26,694494,"Johnson, Ty",38,8,8,Bot,10,1,10,1,away,Tampa Bay Rays,643377,"Jax, Griffin",False,0
+823407,2026-09-26,642121,"Sulser, Cole",25,9,9,Bot,12,1,12,1,away,Tampa Bay Rays,643377,"Jax, Griffin",False,0
+823653,2026-09-26,701519,"Adams, Travis",40,6,7,Top,6,1,6,1,home,Minnesota Twins,641927,"Ober, Bailey",False,0
+823653,2026-09-26,573124,"Rogers, Taylor",14,8,8,Top,6,1,6,1,home,Minnesota Twins,641927,"Ober, Bailey",False,0
+823653,2026-09-26,672782,"Gómez, Yoendrys",9,9,9,Top,6,2,6,2,home,Minnesota Twins,641927,"Ober, Bailey",False,0
+823653,2026-09-26,676395,"Garcia, Robert",23,5,6,Bot,6,1,6,1,away,Texas Rangers,543135,"Eovaldi, Nathan",False,0
+823653,2026-09-26,596001,"Junis, Jakob",17,7,7,Bot,6,1,6,1,away,Texas Rangers,543135,"Eovaldi, Nathan",False,0
+823653,2026-09-26,641302,"Alexander, Tyler",22,8,8,Bot,6,1,6,2,away,Texas Rangers,543135,"Eovaldi, Nathan",False,1
+823653,2026-09-26,656641,"Latz, Jacob",17,9,9,Bot,6,2,6,2,away,Texas Rangers,543135,"Eovaldi, Nathan",False,0
+823733,2026-09-26,690986,"Harrison, Kyle",29,4,5,Top,2,1,2,1,home,Milwaukee Brewers,669160,"May, Dustin",False,0
+823733,2026-09-26,668941,"Romero, JoJo",26,6,7,Top,2,3,2,3,home,Milwaukee Brewers,669160,"May, Dustin",False,0
+823733,2026-09-26,622608,"Senzatela, Antonio",5,7,7,Top,2,3,2,3,home,Milwaukee Brewers,669160,"May, Dustin",False,0
+823733,2026-09-26,676879,"Ashby, Aaron",26,8,9,Top,2,3,2,3,home,Milwaukee Brewers,669160,"May, Dustin",False,0
+823733,2026-09-26,700669,"Graceffo, Gordon",40,6,7,Bot,2,3,2,3,away,St. Louis Cardinals,687273,"Mathews, Quinn",False,0
+823733,2026-09-26,685464,"Winquest, Cade",20,8,8,Bot,2,3,2,3,away,St. Louis Cardinals,687273,"Mathews, Quinn",False,0
+823813,2026-09-26,689266,"Dodd, Dylan",25,4,4,Bot,6,0,6,2,away,Atlanta Braves,608718,"Suter, Brent",False,2
+823813,2026-09-26,682989,"Mederos, Victor",36,5,6,Bot,6,2,6,2,away,Atlanta Braves,608718,"Suter, Brent",False,0
+823813,2026-09-26,663158,"Suarez, Robert",8,7,7,Bot,6,2,6,3,away,Atlanta Braves,608718,"Suter, Brent",False,1
+823813,2026-09-26,669276,"Lee, Dylan",10,8,8,Bot,6,3,6,3,away,Atlanta Braves,608718,"Suter, Brent",False,0
+823813,2026-09-26,628452,"Iglesias, Raisel",10,9,9,Bot,8,3,8,3,away,Atlanta Braves,608718,"Suter, Brent",False,0
+823813,2026-09-26,680767,"Vodnik, Victor",23,2,3,Top,3,0,4,0,home,Miami Marlins,667652,"Ralston, Jack",False,1
+823813,2026-09-26,806188,"Gibson, Cade",8,3,3,Top,4,0,4,0,home,Miami Marlins,667652,"Ralston, Jack",False,0
+823813,2026-09-26,690978,"Fulton, Dax",42,4,6,Top,4,0,6,2,home,Miami Marlins,667652,"Ralston, Jack",False,2
+823813,2026-09-26,687134,"Blalock, Bradley",54,6,9,Top,6,2,8,3,home,Miami Marlins,667652,"Ralston, Jack",False,2
+824057,2026-09-26,542888,"Armstrong, Shawn",11,7,7,Bot,7,3,7,3,away,Cleveland Guardians,676440,"Bibee, Tanner",False,0
+824057,2026-09-26,671922,"Smith, Cade",5,8,8,Bot,7,5,7,5,away,Cleveland Guardians,676440,"Bibee, Tanner",False,0
+824057,2026-09-26,684974,"Yoho, Craig",10,8,8,Bot,7,3,7,5,away,Cleveland Guardians,676440,"Bibee, Tanner",False,2
+824057,2026-09-26,677944,"Cecconi, Slade",6,9,9,Bot,11,5,11,5,away,Cleveland Guardians,676440,"Bibee, Tanner",False,0
+824057,2026-09-26,543238,"Gose, Anthony",14,7,7,Top,6,3,7,3,home,Kansas City Royals,608379,"Wacha, Michael",False,1
+824057,2026-09-26,621016,"Cuas, Jose",17,8,8,Top,7,3,7,3,home,Kansas City Royals,608379,"Wacha, Michael",False,0
+824057,2026-09-26,656638,"Lange, Alex",29,9,9,Top,7,5,9,5,home,Kansas City Royals,608379,"Wacha, Michael",False,2
+824057,2026-09-26,702352,"Bivens, Spencer",23,9,9,Top,9,5,11,5,home,Kansas City Royals,608379,"Wacha, Michael",False,2
+824219,2026-09-26,641755,"Kinley, Tyler",4,6,6,Top,2,0,2,0,home,Detroit Tigers,434378,"Verlander, Justin",False,0
+824219,2026-09-26,676428,"Hurter, Brant",19,7,8,Top,2,1,2,1,home,Detroit Tigers,434378,"Verlander, Justin",False,0
+824219,2026-09-26,621097,"Waguespack, Jacob",24,8,9,Top,2,1,3,1,home,Detroit Tigers,434378,"Verlander, Justin",False,1
+824219,2026-09-26,670990,"Ramírez, Yohan",36,2,3,Bot,0,0,0,0,away,Pittsburgh Pirates,489446,"Yates, Kirby",False,0
+824219,2026-09-26,669387,"Mlodzinski, Carmen",49,4,6,Bot,1,0,2,0,away,Pittsburgh Pirates,489446,"Yates, Kirby",False,0
+824219,2026-09-26,681895,"Sisk, Evan",17,6,6,Bot,2,0,2,1,away,Pittsburgh Pirates,489446,"Yates, Kirby",False,1
+824219,2026-09-26,642397,"Soto, Gregory",11,7,7,Bot,2,1,2,1,away,Pittsburgh Pirates,489446,"Yates, Kirby",False,0
+824219,2026-09-26,596133,"Weaver, Luke",8,8,8,Bot,3,1,3,1,away,Pittsburgh Pirates,489446,"Yates, Kirby",False,0
+824219,2026-09-26,682254,"Montgomery, Mason",20,9,9,Bot,3,1,3,4,away,Pittsburgh Pirates,489446,"Yates, Kirby",False,3
+824543,2026-09-26,702273,"Schultz, Noah",42,1,4,Top,3,0,5,2,home,Chicago White Sox,663436,"Martin, Davis",False,2
+824543,2026-09-26,663855,"Hicks, Jordan",18,5,5,Top,5,2,5,2,home,Chicago White Sox,663436,"Martin, Davis",False,0
+824543,2026-09-26,656794,"Newcomb, Sean",22,6,7,Top,5,2,5,2,home,Chicago White Sox,663436,"Martin, Davis",False,0
+824543,2026-09-26,623211,"Brazobán, Huascar",16,7,8,Top,5,2,5,3,home,Chicago White Sox,663436,"Martin, Davis",False,0
+824543,2026-09-26,663542,"Hudson, Bryan",15,9,9,Top,5,3,6,3,home,Chicago White Sox,663436,"Martin, Davis",False,1
+824543,2026-09-26,699823,"Davis, Tyler",3,9,9,Top,9,3,9,3,home,Chicago White Sox,663436,"Martin, Davis",False,0
+824543,2026-09-26,663372,"Feltner, Ryan",64,4,7,Bot,5,2,5,3,away,Colorado Rockies,500779,"Quintana, Jose",False,1
+824543,2026-09-26,657514,"Bernardino, Brennan",10,7,8,Bot,5,3,5,3,away,Colorado Rockies,500779,"Quintana, Jose",False,0
+824543,2026-09-26,605447,"Romano, Jordan",18,9,9,Bot,9,3,9,6,away,Colorado Rockies,500779,"Quintana, Jose",False,3
+824949,2026-09-26,656240,"Blewett, Scott",17,6,6,Top,6,1,6,1,home,Athletics,678022,"Perkins, Jack",False,0
+824949,2026-09-26,680723,"Rom, Drew",25,6,7,Top,6,1,9,1,home,Athletics,678022,"Perkins, Jack",False,3
+824949,2026-09-26,814305,"Tur, Yunior",46,7,9,Top,9,1,13,2,home,Athletics,678022,"Perkins, Jack",False,4
+824949,2026-09-26,669854,"Blanco, Ronel",30,8,9,Bot,12,2,13,2,away,Houston Astros,669713,"Wesneski, Hayden",False,0
