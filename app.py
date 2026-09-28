@@ -19,6 +19,9 @@ BULLPEN_APPEARANCES_FILE = PROJECT_ROOT / "data" / "processed" / "bullpen_appear
 RELIEVER_RUN_FILE = PROJECT_ROOT / "data" / "processed" / "reliever_run_scores_2026.csv"
 BULLPEN_FILE = PROJECT_ROOT / "data" / "processed" / "bullpen_scores_2026.csv"
 ROTATION_FILE = PROJECT_ROOT / "data" / "processed" / "projected_rotations_2026.csv"
+REGULAR_SEASON_SNAPSHOT_DIR = PROJECT_ROOT / "data" / "snapshots" / "2026-regular-season-final"
+REGULAR_SEASON_BOARD_FILE = REGULAR_SEASON_SNAPSHOT_DIR / "processed" / "contender_scores_2026.csv"
+REGULAR_SEASON_HISTORY_FILE = REGULAR_SEASON_SNAPSHOT_DIR / "processed" / "ranking_history_2026.csv"
 ASSETS_DIR = PROJECT_ROOT / "assets"
 MLB_LOGO_FILE = ASSETS_DIR / "mlb-logo.png"
 
@@ -53,6 +56,21 @@ TEAM_META = {
     "Los Angeles Dodgers": {"league": "NL", "division": "West"},
     "San Diego Padres": {"league": "NL", "division": "West"},
     "San Francisco Giants": {"league": "NL", "division": "West"},
+}
+
+PLAYOFF_SEEDS = {
+    "Tampa Bay Rays": 1,
+    "Cleveland Guardians": 2,
+    "Houston Astros": 3,
+    "New York Yankees": 4,
+    "Boston Red Sox": 5,
+    "Chicago White Sox": 6,
+    "Milwaukee Brewers": 1,
+    "Los Angeles Dodgers": 2,
+    "Atlanta Braves": 3,
+    "San Diego Padres": 4,
+    "Chicago Cubs": 5,
+    "Philadelphia Phillies": 6,
 }
 
 TEAM_LOGO_FILES = {
@@ -123,6 +141,22 @@ def load_data():
     board["league"] = board["team"].map(lambda t: TEAM_META.get(t, {}).get("league", "?"))
     board["division"] = board["team"].map(lambda t: TEAM_META.get(t, {}).get("division", "?"))
     return board, starters, bullpen_appearances, relievers, bullpen, rotations, history
+
+
+@st.cache_data
+def load_regular_season_snapshot():
+    snapshot_board = pd.read_csv(REGULAR_SEASON_BOARD_FILE)
+    snapshot_history = pd.read_csv(REGULAR_SEASON_HISTORY_FILE)
+    snapshot_history["snapshot_date"] = pd.to_datetime(
+        snapshot_history["snapshot_date"], errors="coerce"
+    )
+    snapshot_board["league"] = snapshot_board["team"].map(
+        lambda team: TEAM_META.get(team, {}).get("league", "?")
+    )
+    snapshot_board["division"] = snapshot_board["team"].map(
+        lambda team: TEAM_META.get(team, {}).get("division", "?")
+    )
+    return snapshot_board, snapshot_history
 
 board, starters, bullpen_appearances, relievers, bullpen, rotations, history = load_data()
 latest_game_date = history["snapshot_date"].max()
@@ -203,18 +237,28 @@ def run_diff_text(value):
     return f"+{value:.2f}" if value >= 0 else f"{value:.2f}"
 
 
-def movement_for_team(team_name):
-    if history.empty:
+def movement_for_team(team_name, current_board=None, ranking_history=None):
+    current_board = board if current_board is None else current_board
+    ranking_history = history if ranking_history is None else ranking_history
+    if ranking_history.empty:
         return "NEW", "neutral"
-    dates = history["snapshot_date"].dropna().drop_duplicates().sort_values().tolist()
+    dates = (
+        ranking_history["snapshot_date"]
+        .dropna()
+        .drop_duplicates()
+        .sort_values()
+        .tolist()
+    )
     if len(dates) < 2:
         return "NEW", "neutral"
-    previous = history[history["snapshot_date"] == dates[-2]]
+    previous = ranking_history[ranking_history["snapshot_date"] == dates[-2]]
     row = previous[previous["team"] == team_name]
     if row.empty:
         return "NEW", "neutral"
     previous_rank = safe_int(row.iloc[0]["rank"])
-    current_rank = safe_int(board.loc[board["team"] == team_name, "rank"].iloc[0])
+    current_rank = safe_int(
+        current_board.loc[current_board["team"] == team_name, "rank"].iloc[0]
+    )
     change = previous_rank - current_rank
     if change > 0:
         return f"▲ {change}", "up"
@@ -621,7 +665,7 @@ div[role="radiogroup"] > label p{
 
 
 /* FINAL NAV */
-.os-nav{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));width:100%;margin:12px 0 0;background:var(--navy);border:1px solid #08223a;box-shadow:0 2px 7px rgba(10,41,68,.13)}
+.os-nav{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));width:100%;margin:12px 0 0;background:var(--navy);border:1px solid #08223a;box-shadow:0 2px 7px rgba(10,41,68,.13)}
 .os-nav a{min-height:48px;padding:0 10px;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff!important;text-decoration:none!important;font-size:12px;font-weight:800;border-right:1px solid rgba(255,255,255,.14);box-sizing:border-box}
 .os-nav a:last-child{border-right:0}.os-nav a:hover{background:#173f61}.os-nav a.active{background:#244f72;box-shadow:inset 0 -4px 0 var(--red)}
 .os-nav-dot{width:10px;height:10px;flex:0 0 10px;border-radius:50%;background:#fff}.os-nav a.active .os-nav-dot{background:#ff4d62}
@@ -1863,6 +1907,53 @@ select{
 .board-row{grid-template-columns:30px minmax(0,1fr) 66px!important;gap:6px!important;padding:10px 8px!important}.board-row .rank-num{font-size:16px!important}.board-row .team-cell{gap:7px!important}.board-row .rank-logo{width:32px!important;height:32px!important;flex-basis:32px!important;padding:3px!important}.board-row .team-name{font-size:12px!important}.board-row .team-meta{font-size:9px!important}.board-row>.rank-score{font-size:18px!important}
 }
 
+/* HOME: FINAL PLAYOFF FIELD */
+.playoff-intro{max-width:900px;margin:-2px 0 14px;color:var(--muted);font-size:14px;line-height:1.55}
+.bracket-wide{width:min(1500px,calc(100vw - 40px));margin-left:50%;transform:translateX(-50%)}
+.tournament-tree{display:grid;grid-template-columns:minmax(0,1fr) 28px 190px 28px minmax(0,1fr);gap:8px;align-items:stretch;padding:18px 4px 8px}
+.league-tree{min-width:0}.league-tree-title{margin-bottom:12px;color:var(--navy);font-size:18px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:0}.league-content{display:grid;grid-template-columns:minmax(0,1fr) 32px 158px;gap:7px;align-items:stretch;height:100%}.nl-tree .league-content{grid-template-columns:158px 32px minmax(0,1fr)}
+.path-stack{display:grid;gap:34px}.path-round-labels,.path-flow{display:grid;grid-template-columns:minmax(205px,1fr) 32px minmax(198px,.96fr);gap:7px;align-items:stretch}.nl-tree .path-round-labels,.nl-tree .path-flow{grid-template-columns:minmax(198px,.96fr) 32px minmax(205px,1fr)}
+.path-round-labels{margin-bottom:-10px;color:#526d80;font-size:12px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:0}.path-round-labels span:nth-child(2){visibility:hidden}.path-flow{min-height:184px}.bracket-series{display:grid;grid-template-rows:auto 1fr 1fr;gap:7px;position:relative;min-height:0}.series-label{text-align:center;color:#526d80;font-size:12px;font-weight:800;line-height:1.3;text-transform:uppercase;letter-spacing:0}.series-vs{display:none}
+.bracket-team{display:grid;grid-template-columns:34px 44px minmax(0,1fr);grid-template-areas:"seed logo name" "seed logo model";gap:3px 9px;align-items:center;background:#fff;border:1px solid #8baabd;border-left:4px solid var(--navy);padding:9px;min-width:0;box-shadow:0 2px 8px rgba(16,47,79,.08);box-sizing:border-box}
+.bracket-seed{grid-area:seed;align-self:stretch;display:flex;align-items:center;justify-content:center;background:#173c58;color:#fff;font-size:17px;font-weight:800}.bracket-logo{grid-area:logo;width:44px;height:44px;object-fit:contain;background:#fff;border:1px solid #b3cadb;border-radius:6px;padding:4px;box-sizing:border-box}.bracket-team-name{grid-area:name;min-width:0;color:var(--navy);font-size:16px;font-weight:900;line-height:1.15;overflow-wrap:anywhere}.bracket-model{grid-area:model;color:#526d80;font-size:13px;font-weight:700}.bracket-model strong{color:var(--red);font-size:14px}
+.bye-tag{position:absolute;right:7px;top:28px;padding:3px 7px;background:#dce9f1;color:#294b63;font-size:10px;font-weight:800;text-transform:uppercase}.tbd-slot{min-height:76px;display:flex;align-items:center;justify-content:center;background:#edf4f8;border:2px solid #8baabd;padding:9px;text-align:center;box-sizing:border-box}.tbd-label{color:var(--navy);font-size:18px;font-weight:800}.tbd-source{display:none}
+.branch-link,.round-link,.champion-link{position:relative;z-index:2;overflow:visible;background-repeat:no-repeat}.branch-link{background-image:linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a);background-position:left 25%,left 75%,50% 25%,right 50%;background-size:50% 3px,50% 3px,3px 50%,50% 3px}.nl-tree .branch-link{background-position:right 25%,right 75%,50% 25%,left 50%}.round-link{min-height:402px;background-image:linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a);background-position:left 16%,left 38%,50% 16%,right 27%,left 62%,left 84%,50% 62%,right 73%;background-size:50% 3px,50% 3px,3px 22%,50% 3px,50% 3px,50% 3px,3px 22%,50% 3px}.nl-tree .round-link{background-position:right 16%,right 38%,50% 16%,left 27%,right 62%,right 84%,50% 62%,left 73%}.champion-link{background-image:linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a),linear-gradient(#355f7a,#355f7a);background-position:left 25%,left 75%,50% 25%,right 50%;background-size:50% 3px,50% 3px,3px 50%,50% 3px}.champion-link:nth-of-type(4){background-position:right 25%,right 75%,50% 25%,left 50%}.lcs-block{align-self:stretch;min-height:0}.lcs-block .path-round-labels{display:block;height:20px;margin:0 0 3px}.lcs-block .bracket-series{height:calc(100% - 23px);grid-template-rows:78px 78px;align-content:space-around}.lcs-block .series-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.lcs-block .tbd-slot{min-height:78px}
+.world-destination{position:relative;align-self:center;padding:18px 12px;background:#fff;border:2px solid #8baabd;border-top:6px solid var(--red);box-shadow:0 7px 22px rgba(16,47,79,.14)}.world-kicker{color:var(--red);font-size:11px;font-weight:800;text-align:center;text-transform:uppercase;letter-spacing:0}.world-title{margin:4px 0 14px;color:var(--navy);font-size:21px;font-weight:800;text-align:center}.world-destination .tbd-slot{min-height:82px;background:#e8f1f6}.champion-connector{min-height:100%}
+.takeaway-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.takeaway{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--navy);padding:16px;color:#36566f;font-size:13px;line-height:1.55}.takeaway-wide{grid-column:1/-1;border-top-color:var(--red)}.takeaway-kicker{color:var(--red);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}.takeaway h3{margin:3px 0 7px;color:var(--navy);font-size:17px}.takeaway p{margin:0}.takeaway-stat{display:inline-block;margin:8px 8px 0 0;padding:6px 9px;background:#e6f0f6;color:var(--navy);font-size:11px;font-weight:800}
+.duel-summary{display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:center}.duel-score{padding-right:16px;border-right:1px solid var(--line)}.duel-score strong{display:block;color:var(--navy);font-size:23px}.duel-score span{color:var(--muted);font-size:10px;font-weight:800;text-transform:uppercase}.duel-evidence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.duel-evidence div{padding:8px;background:#eef5f9;color:#36566f;font-size:11px;line-height:1.4}.duel-evidence strong{display:block;color:var(--navy);margin-bottom:2px}
+.interpretation-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:12px}.interpretation-card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--navy);padding:15px;color:#36566f;font-size:12px;line-height:1.55}.interpretation-card.context{border-left-color:var(--red)}.interpretation-card h3{margin:0 0 6px;color:var(--navy);font-size:15px}.interpretation-card p{margin:0 0 8px}.interpretation-card p:last-child{margin-bottom:0}.interpretation-label{display:block;color:var(--red);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.35px;margin-bottom:2px}
+@media(max-width:1450px){.bracket-wide{width:100%;margin-left:0;transform:none}.tournament-tree{display:flex;flex-direction:column;gap:28px;padding:12px 0}.league-tree{width:100%;max-width:1040px}.al-tree{order:1}.nl-tree{order:2}.world-destination{order:3;width:min(420px,100%);box-sizing:border-box}.champion-link{display:none}.league-content,.nl-tree .league-content{grid-template-columns:minmax(0,1fr) 52px 190px}.nl-tree .path-stack{grid-column:1;grid-row:1}.nl-tree .round-link{grid-column:2;grid-row:1}.nl-tree .lcs-block{grid-column:3;grid-row:1}.nl-tree .path-round-labels,.nl-tree .path-flow{grid-template-columns:minmax(210px,1fr) 48px minmax(190px,.92fr)}.nl-tree .wc-round-label,.nl-tree .wc-series{grid-column:1;grid-row:1}.nl-tree .branch-link{grid-column:2;grid-row:1}.nl-tree .ds-round-label,.nl-tree .ds-series{grid-column:3;grid-row:1}}
+@media(max-width:700px){.takeaway-grid,.interpretation-grid{grid-template-columns:1fr}.takeaway-wide{grid-column:auto}.duel-summary{grid-template-columns:1fr}.duel-score{padding:0 0 10px;border-right:0;border-bottom:1px solid var(--line)}.duel-evidence{grid-template-columns:1fr}}
+@media(max-width:820px){.tournament-tree{gap:32px}.league-tree-title{font-size:19px;text-align:left;border-bottom:2px solid var(--navy);padding-bottom:7px}.league-content,.nl-tree .league-content{display:flex;flex-direction:column;direction:ltr}.path-stack{order:1;width:100%;gap:30px}.round-link{order:2;width:100%;height:42px;min-height:42px;background:#355f7a;background-position:center;background-size:3px 100%;background-repeat:no-repeat}.lcs-block{order:3;width:100%}.path-round-labels{display:none}.path-flow,.nl-tree .path-flow{display:flex;flex-direction:column;direction:ltr;gap:8px;min-height:0}.path-flow .bracket-series{width:100%}.path-flow .branch-link,.nl-tree .path-flow .branch-link{width:100%;height:42px;background:#355f7a;background-position:center;background-size:3px 100%;background-repeat:no-repeat}.nl-tree .path-flow .branch-link{order:2}.nl-tree .path-flow .wc-series{order:1}.nl-tree .path-flow .ds-series{order:3}.bracket-team{grid-template-columns:38px 46px minmax(0,1fr);padding:11px}.bracket-logo{width:46px;height:46px}.bracket-team-name{font-size:16px}.bracket-model{font-size:13px}.bracket-model strong{font-size:15px}.bracket-metrics{gap:8px}.bracket-metric{font-size:12px}.series-label{font-size:12px}.tbd-label{font-size:18px}.bye-tag{position:absolute;top:29px}.lcs-block .bracket-series{width:100%;height:auto;grid-template-rows:auto 1fr 1fr}.lcs-block .tbd-slot{min-height:82px}.world-destination{width:100%}}
+
+.champion-link,.world-destination + .champion-link{background-image:linear-gradient(#355f7a,#355f7a);background-position:center;background-size:100% 3px}
+@media(max-width:820px){.round-link,.path-flow .branch-link,.nl-tree .path-flow .branch-link{background-color:transparent;background-image:linear-gradient(#355f7a,#355f7a);background-position:center;background-size:3px 100%;background-repeat:no-repeat}}
+
+/* Editorial postseason bracket */
+.editorial-bracket{width:min(1400px,calc(100vw - 40px));margin-left:50%;transform:translateX(-50%)}
+.editorial-tree{display:grid;grid-template-columns:minmax(0,1fr) 24px 196px 24px minmax(0,1fr);gap:0;align-items:center;padding:20px 0 10px}
+.editorial-league{min-width:0}.editorial-league-title{margin:0 0 14px;color:var(--navy);font-size:18px;font-weight:900;text-align:center;text-transform:uppercase}
+.editorial-league-grid{display:grid;grid-template-columns:minmax(188px,1fr) 24px minmax(188px,1fr) 24px 118px;gap:0;align-items:center}.editorial-league-grid>*{grid-row:1}
+.editorial-league.nl .wc-stage{grid-column:5}.editorial-league.nl .wc-ds-link{grid-column:4}.editorial-league.nl .ds-stage{grid-column:3}.editorial-league.nl .ds-lcs-link{grid-column:2}.editorial-league.nl .lcs-stage{grid-column:1}
+.stage-stack{display:grid;gap:28px}.stage-heading{margin-bottom:8px;color:#526d80;font-size:11px;font-weight:900;text-align:center;text-transform:uppercase}
+.matchup-block{overflow:hidden;background:#fff;border:1px solid #9db5c5;border-left:4px solid var(--navy);box-shadow:0 2px 7px rgba(16,47,79,.07)}
+.matchup-label{padding:6px 9px;background:#e6eff5;color:#3e6178;font-size:10px;font-weight:900;text-transform:uppercase}
+.matchup-row{display:grid;grid-template-columns:22px 48px 48px 42px;gap:4px;align-items:center;min-height:62px;padding:5px 6px;border-top:1px solid #d4e0e7;box-sizing:border-box}
+.matchup-seed{color:#173c58;font-size:16px;font-weight:900;text-align:center}.matchup-logo{width:46px;height:46px;object-fit:contain}.matchup-rank{color:var(--red);font-size:13px;font-weight:900;white-space:nowrap;text-align:right}.matchup-score{color:#436176;font-size:13px;font-weight:800;white-space:nowrap;text-align:right}
+.matchup-incoming{grid-template-columns:1fr;min-height:52px;color:#526d80;font-size:13px;font-weight:800;text-align:center}
+.stage-link{height:100%;min-height:310px;background-repeat:no-repeat}.wc-ds-link{background-image:linear-gradient(#456b82,#456b82),linear-gradient(#456b82,#456b82);background-position:center 24%,center 76%;background-size:100% 2px}.ds-lcs-link{position:relative;background:none}.ds-lcs-link::before{content:"";position:absolute;left:0;right:50%;top:24%;bottom:24%;border-top:2px solid #456b82;border-right:2px solid #456b82;border-bottom:2px solid #456b82}.ds-lcs-link::after{content:"";position:absolute;left:50%;right:0;top:50%;border-top:2px solid #456b82}.editorial-league.nl .ds-lcs-link::before{left:50%;right:0;border-right:0;border-left:2px solid #456b82}.editorial-league.nl .ds-lcs-link::after{left:0;right:50%}
+.future-stage{align-self:center}.future-round{background:rgba(255,255,255,.72);padding:10px 9px}.future-title{color:var(--navy);font-size:14px;font-weight:900;text-align:center;text-transform:uppercase}.future-rule{height:2px;margin:7px 0 8px;background:var(--red)}.future-team{color:#294b63;font-size:14px;font-weight:900;text-align:center;line-height:1.3}.future-vs{margin:3px 0;color:#6a8191;font-size:10px;font-weight:800;text-align:center;text-transform:uppercase}
+.editorial-champion-link{height:2px;background:#456b82}
+.editorial-world{background:#fff;border-top:5px solid var(--red);box-shadow:0 6px 18px rgba(16,47,79,.13);padding:16px 14px}.editorial-world-kicker{color:var(--red);font-size:10px;font-weight:900;text-align:center;text-transform:uppercase}.editorial-world-title{margin:3px 0 12px;color:var(--navy);font-size:21px;font-weight:900;text-align:center}.world-entry{padding:9px 7px;background:#edf4f8;color:#294b63;font-size:12px;font-weight:900;text-align:center}.world-entry+.world-entry{margin-top:5px}
+@media(max-width:1450px){.editorial-bracket{width:100%;margin-left:0;transform:none}.editorial-tree{display:flex;flex-direction:column;gap:28px}.editorial-league{width:100%;max-width:1040px}.editorial-league.al{order:1}.editorial-league.nl{order:2}.editorial-world{order:3;width:min(420px,100%);box-sizing:border-box}.editorial-champion-link{display:none}.editorial-league-grid{grid-template-columns:minmax(260px,1fr) 34px minmax(260px,1fr) 34px 170px}.editorial-league.nl .wc-stage{grid-column:1}.editorial-league.nl .wc-ds-link{grid-column:2}.editorial-league.nl .ds-stage{grid-column:3}.editorial-league.nl .ds-lcs-link{grid-column:4}.editorial-league.nl .lcs-stage{grid-column:5}}
+@media(max-width:820px){.editorial-tree{gap:30px;padding-top:12px}.editorial-league-title{text-align:left;border-bottom:2px solid var(--navy);padding-bottom:7px}.editorial-league-grid,.editorial-league.nl .editorial-league-grid{display:flex;flex-direction:column}.wc-stage,.editorial-league.nl .wc-stage{order:1;width:100%}.wc-ds-link,.editorial-league.nl .wc-ds-link{order:2;width:2px;height:26px;min-height:26px;background:#456b82}.ds-stage,.editorial-league.nl .ds-stage{order:3;width:100%}.ds-lcs-link,.editorial-league.nl .ds-lcs-link{order:4;width:2px;height:26px;min-height:26px;background:#456b82}.ds-lcs-link::before,.ds-lcs-link::after{display:none}.lcs-stage,.editorial-league.nl .lcs-stage{order:5;width:100%}.stage-stack{gap:20px}.matchup-row{grid-template-columns:28px 56px 62px 52px;justify-content:center;gap:12px;min-height:68px}.matchup-incoming{grid-template-columns:1fr}.matchup-logo{width:52px;height:52px}.matchup-rank,.matchup-score{font-size:14px}.future-round{padding:12px}.editorial-world{width:100%}}
+
+/* Home postseason findings */
+.insight-intro{max-width:860px;margin:-2px 0 18px;color:#456277;font-size:14px;line-height:1.55}
+.insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:34px;border-bottom:1px solid #b9ccd8}
+.insight-story{padding:20px 2px 22px;border-top:1px solid #b9ccd8}.insight-index{color:var(--red);font-size:10px;font-weight:900;text-transform:uppercase}.insight-story h3{margin:4px 0 12px;color:var(--navy);font-size:19px;font-weight:900}.insight-story p{margin:0 0 9px;color:#36566f;font-size:13px;line-height:1.58}.insight-story p:last-child{margin-bottom:0}.insight-evidence{color:var(--navy)!important;font-weight:800}.insight-evidence strong{color:var(--red)}
+.limits-note{margin-top:26px;padding:18px 0 4px;border-top:3px solid #829cad}.limits-note h3{margin:0 0 7px;color:#456277;font-size:13px;font-weight:900;text-transform:uppercase}.limits-lead{max-width:900px;margin:0 0 14px;color:#5a7284;font-size:13px;line-height:1.55}.limits-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 30px}.limits-grid p{margin:0;padding:8px 0;color:#5a7284;font-size:12px;line-height:1.55}.limits-grid strong{display:block;margin-bottom:2px;color:#36566f;font-size:11px;text-transform:uppercase}.limits-close{margin:12px 0 0;padding-top:12px;border-top:1px solid #c9d7e0;color:#36566f;font-size:13px;font-weight:800;line-height:1.55}
+@media(max-width:700px){.insight-grid,.limits-grid{grid-template-columns:1fr}.insight-grid{border-bottom:0}.insight-story{padding:18px 0}.insight-story h3{font-size:18px}.limits-note{margin-top:20px}}
 </style>
     """)
 
@@ -1880,7 +1971,17 @@ st.html(
     </div>
     </div>''')
 
-nav = ["Home", "Rankings", "Teams", "Rotations", "Bullpens", "Offense", "Movement", "Model"]
+nav = [
+    "Home",
+    "Regular Season Final",
+    "Rankings",
+    "Teams",
+    "Rotations",
+    "Bullpens",
+    "Offense",
+    "Movement",
+    "Model",
+]
 
 requested_page = st.query_params.get("page", "Home")
 if isinstance(requested_page, list):
@@ -1889,7 +1990,7 @@ if isinstance(requested_page, list):
 page = requested_page if requested_page in nav else "Home"
 
 nav_html = "".join(
-    f'<a class="{"active" if item == page else ""}" href="?page={item}">'
+    f'<a class="{"active" if item == page else ""}" href="?page={item.replace(" ", "%20")}">'
     f'<span class="os-nav-dot"></span><span>{item}</span></a>'
     for item in nav
 )
@@ -1897,12 +1998,16 @@ nav_html = "".join(
 st.html(f'<nav class="os-nav">{nav_html}</nav>')
 
 
-def render_rankings(data):
+def render_rankings(data, current_board=None, ranking_history=None):
+    current_board = board if current_board is None else current_board
+    ranking_history = history if ranking_history is None else ranking_history
     st.html(
         '''<div class="rank-head"><div>RK</div><div>TEAM</div><div>RECORD</div><div class="hide-mid">LAST 10</div>
         <div class="hide-mobile">ROT</div><div class="hide-mobile">BP</div><div class="hide-small">SHIFT</div><div>SCORE</div></div>''')
     for _, row in data.iterrows():
-        move, move_class = movement_for_team(row["team"])
+        move, move_class = movement_for_team(
+            row["team"], current_board, ranking_history
+        )
         l10w = round(row["last_10_win_pct"] * 10)
         st.html(
             f'''<div class="rank-row"><div class="rank-num">{safe_int(row['rank'])}</div>
@@ -1916,15 +2021,167 @@ def render_rankings(data):
             <div class="rank-score">{row['october_shift_score']:.1f}</div></div>''')
 
 
+def playoff_matchup_row(row, seed):
+    return f'''<div class="matchup-row" title="{row['team']}">
+    <div class="matchup-seed">{seed}</div>
+    {logo_html(row['team'], 'matchup-logo')}
+    <div class="matchup-rank">OS #{safe_int(row['rank'])}</div>
+    <div class="matchup-score">{row['october_shift_score']:.2f}</div>
+    </div>'''
+
+
+def incoming_matchup_row(source):
+    return f'<div class="matchup-row matchup-incoming">{source}</div>'
+
+
+def playoff_matchup(label, first_row, second_row):
+    return f'''<section class="matchup-block">
+    <div class="matchup-label">{label}</div>{first_row}{second_row}
+    </section>'''
+
+
+def future_round(league):
+    return f'''<section class="future-round">
+    <div class="future-title">{league}CS</div><div class="future-rule"></div>
+    <div class="future-team">TBD</div><div class="future-vs">vs</div>
+    <div class="future-team">TBD</div></section>'''
+
+
+def render_league_tree(playoff, league, league_name):
+    by_league_seed = {
+        (row["league"], PLAYOFF_SEEDS[row["team"]]): row
+        for _, row in playoff.iterrows()
+    }
+
+    def team(seed):
+        return playoff_matchup_row(by_league_seed[(league, seed)], seed)
+
+    # MLB uses a fixed bracket with no reseeding:
+    # the #4/#5 winner faces seed #1, and the #3/#6 winner faces seed #2.
+    wc_stage = f'''<div class="stage-stack wc-stage">
+    <div><div class="stage-heading">Wild Card</div>{playoff_matchup(f"{league} Wild Card 4 / 5", team(4), team(5))}</div>
+    <div>{playoff_matchup(f"{league} Wild Card 3 / 6", team(3), team(6))}</div>
+    </div>'''
+    ds_stage = f'''<div class="stage-stack ds-stage">
+    <div><div class="stage-heading">Division Series</div>{playoff_matchup(f"{league}DS &middot; #1 path", team(1), incoming_matchup_row("4/5 Winner"))}</div>
+    <div>{playoff_matchup(f"{league}DS &middot; #2 path", team(2), incoming_matchup_row("3/6 Winner"))}</div>
+    </div>'''
+    lcs_stage = f'''<div class="future-stage lcs-stage">
+    <div class="stage-heading">Championship</div>{future_round(league)}
+    </div>'''
+
+    return f'''<section class="editorial-league {league.lower()}">
+    <div class="editorial-league-title">{league_name}</div>
+    <div class="editorial-league-grid">{wc_stage}<div class="stage-link wc-ds-link"></div>
+    {ds_stage}<div class="stage-link ds-lcs-link"></div>{lcs_stage}</div></section>'''
+
+
+def render_full_postseason_bracket(playoff):
+    al_tree = render_league_tree(playoff, "AL", "American League")
+    nl_tree = render_league_tree(playoff, "NL", "National League")
+    world_series = f'''<section class="editorial-world">
+    <div class="editorial-world-kicker">2026 MLB</div><div class="editorial-world-title">World Series</div>
+    <div class="world-entry">AL Champion &middot; TBD</div>
+    <div class="world-entry">NL Champion &middot; TBD</div>
+    </section>'''
+    return f'''<div class="editorial-bracket"><div class="editorial-tree">
+    {al_tree}<div class="editorial-champion-link"></div>
+    {world_series}<div class="editorial-champion-link"></div>{nl_tree}
+    </div></div>'''
+
+
+def render_playoff_field(data):
+    playoff = data[data["team"].isin(PLAYOFF_SEEDS)].copy()
+    st.html(render_full_postseason_bracket(playoff))
+
+    dodgers = playoff[playoff["team"] == "Los Angeles Dodgers"].iloc[0]
+    brewers = playoff[playoff["team"] == "Milwaukee Brewers"].iloc[0]
+    padres = playoff[playoff["team"] == "San Diego Padres"].iloc[0]
+    yankees = playoff[playoff["team"] == "New York Yankees"].iloc[0]
+    astros = playoff[playoff["team"] == "Houston Astros"].iloc[0]
+    phillies = playoff[playoff["team"] == "Philadelphia Phillies"].iloc[0]
+    top_margin = dodgers["october_shift_score"] - brewers["october_shift_score"]
+
+    st.html('<div class="section">What October Shift Saw</div>')
+    st.html(
+        '<div class="insight-intro">Postseason seeding shows where teams finished; October Shift evaluates the profile each team brings into October.</div>'
+    )
+    st.html(
+        f'''<div class="insight-grid">
+        <article class="insight-story">
+            <div class="insight-index">Finding 01</div>
+            <h3>Two #4 seeds jump the line</h3>
+            <p class="insight-evidence"><strong>San Diego</strong> &middot; NL #4 seed &middot; OS #{safe_int(padres['rank'])} &middot; {padres['october_shift_score']:.2f}<br><strong>New York</strong> &middot; AL #4 seed &middot; OS #{safe_int(yankees['rank'])} &middot; {yankees['october_shift_score']:.2f}</p>
+            <p>October Shift sees both Wild Card teams as stronger complete profiles than their seeds alone suggest. San Diego gets there through the #3 offense, #2 post-ASB record, #6 bullpen and an 8-2 finish.</p>
+            <p>New York arrives differently: its #2 rotation, #4 run differential and #7 bullpen make it the model's highest-rated AL postseason team. That distinction describes the profile, not who will advance.</p>
+        </article>
+        <article class="insight-story">
+            <div class="insight-index">Finding 02</div>
+            <h3>Same score, different formula</h3>
+            <p class="insight-evidence"><strong>Los Angeles</strong> &middot; OS #1 &middot; {dodgers['october_shift_score']:.2f}<br><strong>Milwaukee</strong> &middot; OS #2 &middot; {brewers['october_shift_score']:.2f} &middot; {top_margin:.2f} points back</p>
+            <p>Los Angeles is powered especially by MLB's #1 rotation, #2 run differential, #2 overall record and an 8-2 finish.</p>
+            <p>Milwaukee reaches nearly the same score more broadly: #1 in run differential, post-ASB record, overall record and quality-adjusted results, with the #3 rotation and its own 8-2 finish. Similar totals can represent meaningfully different profiles.</p>
+        </article>
+        <article class="insight-story">
+            <div class="insight-index">Finding 03</div>
+            <h3>Houston is the field's biggest contradiction</h3>
+            <p class="insight-evidence"><strong>Houston</strong> &middot; AL #3 seed &middot; OS #{safe_int(astros['rank'])} &middot; {astros['october_shift_score']:.2f}</p>
+            <p>The Astros pair a #2 bullpen and #5 offensive momentum with a #21 rotation, a {astros['run_diff_per_game']:+.3f} run differential per game, a .500 overall record and #13 quality-adjusted results.</p>
+            <p>Those are real strengths, but they sit alongside weaknesses elsewhere in Houston's profile. The result shows that one elite unit or a recent hot stretch cannot carry the complete score; it does not label Houston a bad team or predict a loss.</p>
+        </article>
+        <article class="insight-story">
+            <div class="insight-index">Finding 04</div>
+            <h3>One elite unit isn't enough</h3>
+            <p class="insight-evidence"><strong>Philadelphia</strong> &middot; NL #6 seed &middot; OS #{safe_int(phillies['rank'])} &middot; {phillies['october_shift_score']:.2f}</p>
+            <p>The model recognizes Philadelphia's #5 rotation. It also sees the #23 bullpen, #23 offensive momentum, #12 run differential and a 4-6 finish.</p>
+            <p>That broader profile keeps the total much lower and illustrates why October Shift does not let one elite unit dominate the score. It is not a claim that Philadelphia cannot succeed in a short series.</p>
+        </article>
+        </div>'''
+    )
+    st.html(
+        '''<aside class="limits-note">
+        <h3>What October Shift Can't See</h3>
+        <p class="limits-lead">The score is a relative contender rating, not a championship probability. Several parts of October baseball sit outside the frozen September 27 model.</p>
+        <div class="limits-grid">
+            <p><strong>Postseason pitching usage</strong>Rotation and bullpen components use qualifying regular-season performance. The model does not know the confirmed plan: teams can shorten rotations, skip starters, change relief roles, deploy elite relievers more aggressively or move pitchers between roles.</p>
+            <p><strong>Offensive depth</strong>Offensive Momentum measures recent aggregate team production, but hitting is not modeled with the same player-level depth as rotations and bullpens. Exact lineups, hitter-pitcher matchups, platoons and situational or high-leverage hitting are absent.</p>
+            <p><strong>Roster and availability</strong>The snapshot does not know confirmed postseason rosters, injuries, availability, fatigue, return workloads or late role changes.</p>
+            <p><strong>Matchup context and variance</strong>Opponent-specific matchups, probable starters, park effects, rest, travel and bracket difficulty are not modeled. Recent windows are volatile, and no score removes short-series randomness.</p>
+        </div>
+        <p class="limits-close">October Shift is a lens for comparing the profiles teams bring into October—not a World Series probability model or a guarantee of who advances.</p>
+        </aside>'''
+    )
+
+
 if page == "Home":
     st.html(
-        '''<div class="hero"><div class="eyebrow">LIVE 2026 MODEL</div>
-        <h1>Which MLB teams are built best for October?</h1>
-        <p>October Shift ranks all 30 clubs using recent form, offensive momentum, run differential, opponent-adjusted results, starting rotation strength and bullpen performance.</p>
+        '''<div class="hero"><div class="eyebrow">FINAL 2026 REGULAR-SEASON BASELINE</div>
+        <h1>What October Shift saw entering the postseason</h1>
+        <p>The regular season is complete. October Shift is frozen at its September 27 baseline, preserving its final view of the 12 teams entering October.</p>
         <div class="note">The October Shift Score is a relative contender rating, not a World Series probability.</div></div>''')
+    st.html('<div class="section">2026 Postseason Bracket</div>')
+    st.html('<div class="playoff-intro">The actual starting field and fixed MLB advancement paths. Future rounds remain empty until postseason results are recorded.</div>')
+    render_playoff_field(board)
+
+elif page == "Regular Season Final":
+    final_board, final_history = load_regular_season_snapshot()
+    final_snapshot_date = final_history["snapshot_date"].max()
+    final_snapshot_label = (
+        final_snapshot_date.strftime("%B %d, %Y")
+        if pd.notna(final_snapshot_date)
+        else "September 27, 2026"
+    )
+    final_completed_games = int(final_board["games"].sum() / 2)
+
+    st.html(
+        f'''<div class="hero"><div class="eyebrow">FINAL 2026 REGULAR-SEASON VIEW</div>
+        <h1>Which MLB teams were built best for October?</h1>
+        <p>October Shift ranked all 30 clubs using recent form, offensive momentum, run differential, opponent-adjusted results, starting rotation strength and bullpen performance.</p>
+        <div class="note">Frozen through {final_snapshot_label} &middot; {final_completed_games:,} completed games. The October Shift Score is a relative contender rating, not a World Series probability.</div></div>'''
+    )
     st.html('<div class="section">Top Contenders</div>')
     cols = st.columns(4)
-    for col, (_, row) in zip(cols, board.head(4).iterrows()):
+    for col, (_, row) in zip(cols, final_board.head(4).iterrows()):
         with col:
             logo = team_logo(row["team"])
             pic = f'<img class="leader-logo" src="{logo}">' if logo else ""
@@ -1932,23 +2189,24 @@ if page == "Home":
                 f'''<div class="leader"><div class="leader-rank">#{safe_int(row['rank'])} Overall</div>{pic}
                 <div class="leader-team">{row['team']}</div><div class="leader-record">{safe_int(row['wins'])}-{safe_int(row['losses'])}</div>
                 <div class="leader-score">{row['october_shift_score']:.1f}</div><div class="leader-label">October Shift Score</div>
-                <div class="leader-pitch"><span>Rotation {rank_text(row['projected_rotation_rank'])}</span><span>Bullpen {rank_text(row['bullpen_rank'])}</span></div></div>''')
+                <div class="leader-pitch"><span>Rotation {rank_text(row['projected_rotation_rank'])}</span><span>Bullpen {rank_text(row['bullpen_rank'])}</span></div></div>'''
+            )
+
     st.html('<div class="section">Explore</div>')
     c1, c2, c3 = st.columns(3)
     with c1:
         st.html('<div class="feature"><h3>Full Rankings</h3><p>Compare all 30 teams by score, record, recent form, offense, rotation and bullpen rank.</p></div>')
-        # if st.button("View Rankings", key="go_rank"):
-        #     st.session_state.page = "Rankings"; st.rerun()
     with c2:
         st.html('<div class="feature"><h3>Team Breakdowns</h3><p>See why each team ranks where it does and which factors are helping or hurting.</p></div>')
-        # if st.button("Explore Teams", key="go_team"):
-        #     st.session_state.page = "Teams"; st.rerun()
     with c3:
         st.html('<div class="feature"><h3>Pitching Rankings</h3><p>Compare projected postseason rotations and bullpens across MLB.</p></div>')
-        # if st.button("View Rotations", key="go_pitch"):
-        #     st.session_state.page = "Rotations"; st.rerun()
+
     st.html('<div class="section">Top 10 Snapshot</div>')
-    render_rankings(board.head(10))
+    render_rankings(
+        final_board.head(10),
+        current_board=final_board,
+        ranking_history=final_history,
+    )
 
 elif page == "Rankings":
     st.html('<div class="page-title">MLB Contender Rankings</div>')
