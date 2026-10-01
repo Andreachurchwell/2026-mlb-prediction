@@ -73,6 +73,11 @@ PLAYOFF_SEEDS = {
     "Philadelphia Phillies": 6,
 }
 
+WILD_CARD_WINNERS = {
+    ("AL", "3 / 6"): 6,
+    ("NL", "4 / 5"): 4,
+}
+
 TEAM_LOGO_FILES = {
     "Arizona Diamondbacks": "arizona-diamondbacks-logo.png",
     "Atlanta Braves": "atlanta-braves-logo.png",
@@ -2056,15 +2061,24 @@ def render_league_tree(playoff, league, league_name):
     def team(seed):
         return playoff_matchup_row(by_league_seed[(league, seed)], seed)
 
+    def wild_card_label(path):
+        winner_seed = WILD_CARD_WINNERS.get((league, path))
+        result = f" &middot; #{winner_seed} Advances" if winner_seed else ""
+        return f"{league} Wild Card {path}{result}"
+
+    def division_series_opponent(path, placeholder):
+        winner_seed = WILD_CARD_WINNERS.get((league, path))
+        return team(winner_seed) if winner_seed else incoming_matchup_row(placeholder)
+
     # MLB uses a fixed bracket with no reseeding:
     # the #4/#5 winner faces seed #1, and the #3/#6 winner faces seed #2.
     wc_stage = f'''<div class="stage-stack wc-stage">
-    <div><div class="stage-heading">Wild Card</div>{playoff_matchup(f"{league} Wild Card 4 / 5", team(4), team(5))}</div>
-    <div>{playoff_matchup(f"{league} Wild Card 3 / 6", team(3), team(6))}</div>
+    <div><div class="stage-heading">Wild Card</div>{playoff_matchup(wild_card_label("4 / 5"), team(4), team(5))}</div>
+    <div>{playoff_matchup(wild_card_label("3 / 6"), team(3), team(6))}</div>
     </div>'''
     ds_stage = f'''<div class="stage-stack ds-stage">
-    <div><div class="stage-heading">Division Series</div>{playoff_matchup(f"{league}DS &middot; #1 path", team(1), incoming_matchup_row("4/5 Winner"))}</div>
-    <div>{playoff_matchup(f"{league}DS &middot; #2 path", team(2), incoming_matchup_row("3/6 Winner"))}</div>
+    <div><div class="stage-heading">Division Series</div>{playoff_matchup(f"{league}DS &middot; #1 path", team(1), division_series_opponent("4 / 5", "4/5 Winner"))}</div>
+    <div>{playoff_matchup(f"{league}DS &middot; #2 path", team(2), division_series_opponent("3 / 6", "3/6 Winner"))}</div>
     </div>'''
     lcs_stage = f'''<div class="future-stage lcs-stage">
     <div class="stage-heading">Championship</div>{future_round(league)}
