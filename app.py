@@ -74,8 +74,10 @@ PLAYOFF_SEEDS = {
 }
 
 WILD_CARD_WINNERS = {
+    ("AL", "4 / 5"): 4,
     ("AL", "3 / 6"): 6,
     ("NL", "4 / 5"): 4,
+    ("NL", "3 / 6"): 3,
 }
 
 TEAM_LOGO_FILES = {
