@@ -80,6 +80,12 @@ WILD_CARD_WINNERS = {
     ("NL", "3 / 6"): 3,
 }
 
+DIVISION_SERIES_WINNERS = {
+    ("AL", 1): 1,
+    ("NL", 1): 1,
+    ("NL", 2): 2,
+}
+
 TEAM_LOGO_FILES = {
     "Arizona Diamondbacks": "arizona-diamondbacks-logo.png",
     "Atlanta Braves": "atlanta-braves-logo.png",
@@ -2047,11 +2053,11 @@ def playoff_matchup(label, first_row, second_row):
     </section>'''
 
 
-def future_round(league):
+def future_round(league, first_team, second_team):
     return f'''<section class="future-round">
     <div class="future-title">{league}CS</div><div class="future-rule"></div>
-    <div class="future-team">TBD</div><div class="future-vs">vs</div>
-    <div class="future-team">TBD</div></section>'''
+    {first_team}<div class="future-vs">vs</div>
+    {second_team}</section>'''
 
 
 def render_league_tree(playoff, league, league_name):
@@ -2072,6 +2078,23 @@ def render_league_tree(playoff, league, league_name):
         winner_seed = WILD_CARD_WINNERS.get((league, path))
         return team(winner_seed) if winner_seed else incoming_matchup_row(placeholder)
 
+    def division_series_label(path):
+        winner_seed = DIVISION_SERIES_WINNERS.get((league, path))
+        result = f" &middot; #{winner_seed} Advances" if winner_seed else ""
+        return f"{league}DS &middot; #{path} path{result}"
+
+    def championship_slot(path):
+        winner_seed = DIVISION_SERIES_WINNERS.get((league, path))
+        if not winner_seed:
+            return '<div class="future-team">TBD</div>'
+        row = by_league_seed[(league, winner_seed)]
+        return (
+            f'<div class="future-team" title="{row["team"]} &middot; '
+            f'Seed {winner_seed} &middot; OS #{safe_int(row["rank"])} &middot; '
+            f'{row["october_shift_score"]:.2f}">'
+            f'{logo_html(row["team"], "matchup-logo")}</div>'
+        )
+
     # MLB uses a fixed bracket with no reseeding:
     # the #4/#5 winner faces seed #1, and the #3/#6 winner faces seed #2.
     wc_stage = f'''<div class="stage-stack wc-stage">
@@ -2079,11 +2102,11 @@ def render_league_tree(playoff, league, league_name):
     <div>{playoff_matchup(wild_card_label("3 / 6"), team(3), team(6))}</div>
     </div>'''
     ds_stage = f'''<div class="stage-stack ds-stage">
-    <div><div class="stage-heading">Division Series</div>{playoff_matchup(f"{league}DS &middot; #1 path", team(1), division_series_opponent("4 / 5", "4/5 Winner"))}</div>
-    <div>{playoff_matchup(f"{league}DS &middot; #2 path", team(2), division_series_opponent("3 / 6", "3/6 Winner"))}</div>
+    <div><div class="stage-heading">Division Series</div>{playoff_matchup(division_series_label(1), team(1), division_series_opponent("4 / 5", "4/5 Winner"))}</div>
+    <div>{playoff_matchup(division_series_label(2), team(2), division_series_opponent("3 / 6", "3/6 Winner"))}</div>
     </div>'''
     lcs_stage = f'''<div class="future-stage lcs-stage">
-    <div class="stage-heading">Championship</div>{future_round(league)}
+    <div class="stage-heading">Championship</div>{future_round(league, championship_slot(1), championship_slot(2))}
     </div>'''
 
     return f'''<section class="editorial-league {league.lower()}">
