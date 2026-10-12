@@ -82,6 +82,7 @@ WILD_CARD_WINNERS = {
 
 DIVISION_SERIES_WINNERS = {
     ("AL", 1): 1,
+    ("AL", 2): 2,
     ("NL", 1): 1,
     ("NL", 2): 2,
 }
