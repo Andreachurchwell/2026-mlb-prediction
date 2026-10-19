@@ -87,6 +87,10 @@ DIVISION_SERIES_WINNERS = {
     ("NL", 2): 2,
 }
 
+CHAMPIONSHIP_SERIES_WINNERS = {
+    "NL": 1,
+}
+
 TEAM_LOGO_FILES = {
     "Arizona Diamondbacks": "arizona-diamondbacks-logo.png",
     "Atlanta Braves": "atlanta-braves-logo.png",
@@ -1958,6 +1962,7 @@ select{
 .stage-link{height:100%;min-height:310px;background-repeat:no-repeat}.wc-ds-link{background-image:linear-gradient(#456b82,#456b82),linear-gradient(#456b82,#456b82);background-position:center 24%,center 76%;background-size:100% 2px}.ds-lcs-link{position:relative;background:none}.ds-lcs-link::before{content:"";position:absolute;left:0;right:50%;top:24%;bottom:24%;border-top:2px solid #456b82;border-right:2px solid #456b82;border-bottom:2px solid #456b82}.ds-lcs-link::after{content:"";position:absolute;left:50%;right:0;top:50%;border-top:2px solid #456b82}.editorial-league.nl .ds-lcs-link::before{left:50%;right:0;border-right:0;border-left:2px solid #456b82}.editorial-league.nl .ds-lcs-link::after{left:0;right:50%}
 .future-stage{align-self:center}.future-round{background:rgba(255,255,255,.72);padding:10px 9px}.future-title{color:var(--navy);font-size:14px;font-weight:900;text-align:center;text-transform:uppercase}.future-rule{height:2px;margin:7px 0 8px;background:var(--red)}.future-team{color:#294b63;font-size:14px;font-weight:900;text-align:center;line-height:1.3}.future-vs{margin:3px 0;color:#6a8191;font-size:10px;font-weight:800;text-align:center;text-transform:uppercase}
 .editorial-champion-link{height:2px;background:#456b82}
+.world-entry .matchup-logo{display:block;width:64px;height:64px;margin:8px auto 0}
 .editorial-world{background:#fff;border-top:5px solid var(--red);box-shadow:0 6px 18px rgba(16,47,79,.13);padding:16px 14px}.editorial-world-kicker{color:var(--red);font-size:10px;font-weight:900;text-align:center;text-transform:uppercase}.editorial-world-title{margin:3px 0 12px;color:var(--navy);font-size:21px;font-weight:900;text-align:center}.world-entry{padding:9px 7px;background:#edf4f8;color:#294b63;font-size:12px;font-weight:900;text-align:center}.world-entry+.world-entry{margin-top:5px}
 @media(max-width:1450px){.editorial-bracket{width:100%;margin-left:0;transform:none}.editorial-tree{display:flex;flex-direction:column;gap:28px}.editorial-league{width:100%;max-width:1040px}.editorial-league.al{order:1}.editorial-league.nl{order:2}.editorial-world{order:3;width:min(420px,100%);box-sizing:border-box}.editorial-champion-link{display:none}.editorial-league-grid{grid-template-columns:minmax(260px,1fr) 34px minmax(260px,1fr) 34px 170px}.editorial-league.nl .wc-stage{grid-column:1}.editorial-league.nl .wc-ds-link{grid-column:2}.editorial-league.nl .ds-stage{grid-column:3}.editorial-league.nl .ds-lcs-link{grid-column:4}.editorial-league.nl .lcs-stage{grid-column:5}}
 @media(max-width:820px){.editorial-tree{gap:30px;padding-top:12px}.editorial-league-title{text-align:left;border-bottom:2px solid var(--navy);padding-bottom:7px}.editorial-league-grid,.editorial-league.nl .editorial-league-grid{display:flex;flex-direction:column}.wc-stage,.editorial-league.nl .wc-stage{order:1;width:100%}.wc-ds-link,.editorial-league.nl .wc-ds-link{order:2;width:2px;height:26px;min-height:26px;background:#456b82}.ds-stage,.editorial-league.nl .ds-stage{order:3;width:100%}.ds-lcs-link,.editorial-league.nl .ds-lcs-link{order:4;width:2px;height:26px;min-height:26px;background:#456b82}.ds-lcs-link::before,.ds-lcs-link::after{display:none}.lcs-stage,.editorial-league.nl .lcs-stage{order:5;width:100%}.stage-stack{gap:20px}.matchup-row{grid-template-columns:28px 56px 62px 52px;justify-content:center;gap:12px;min-height:68px}.matchup-incoming{grid-template-columns:1fr}.matchup-logo{width:52px;height:52px}.matchup-rank,.matchup-score{font-size:14px}.future-round{padding:12px}.editorial-world{width:100%}}
@@ -2055,8 +2060,10 @@ def playoff_matchup(label, first_row, second_row):
 
 
 def future_round(league, first_team, second_team):
+    winner_seed = CHAMPIONSHIP_SERIES_WINNERS.get(league)
+    result = f" &middot; #{winner_seed} Advances" if winner_seed else ""
     return f'''<section class="future-round">
-    <div class="future-title">{league}CS</div><div class="future-rule"></div>
+    <div class="future-title">{league}CS{result}</div><div class="future-rule"></div>
     {first_team}<div class="future-vs">vs</div>
     {second_team}</section>'''
 
@@ -2117,12 +2124,22 @@ def render_league_tree(playoff, league, league_name):
 
 
 def render_full_postseason_bracket(playoff):
+    def league_champion(league):
+        winner_seed = CHAMPIONSHIP_SERIES_WINNERS.get(league)
+        if not winner_seed:
+            return "TBD"
+        return next(
+            row["team"] for _, row in playoff.iterrows()
+            if row["league"] == league and PLAYOFF_SEEDS[row["team"]] == winner_seed
+        )
+
     al_tree = render_league_tree(playoff, "AL", "American League")
     nl_tree = render_league_tree(playoff, "NL", "National League")
+    nl_champion = league_champion("NL")
     world_series = f'''<section class="editorial-world">
     <div class="editorial-world-kicker">2026 MLB</div><div class="editorial-world-title">World Series</div>
-    <div class="world-entry">AL Champion &middot; TBD</div>
-    <div class="world-entry">NL Champion &middot; TBD</div>
+    <div class="world-entry">AL Champion &middot; {league_champion("AL")}</div>
+    <div class="world-entry">NL Champion{logo_html(nl_champion, "matchup-logo") if nl_champion != "TBD" else " &middot; TBD"}</div>
     </section>'''
     return f'''<div class="editorial-bracket"><div class="editorial-tree">
     {al_tree}<div class="editorial-champion-link"></div>
