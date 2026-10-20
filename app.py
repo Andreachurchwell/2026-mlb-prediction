@@ -88,6 +88,7 @@ DIVISION_SERIES_WINNERS = {
 }
 
 CHAMPIONSHIP_SERIES_WINNERS = {
+    "AL": 1,
     "NL": 1,
 }
 
@@ -2135,10 +2136,11 @@ def render_full_postseason_bracket(playoff):
 
     al_tree = render_league_tree(playoff, "AL", "American League")
     nl_tree = render_league_tree(playoff, "NL", "National League")
+    al_champion = league_champion("AL")
     nl_champion = league_champion("NL")
     world_series = f'''<section class="editorial-world">
     <div class="editorial-world-kicker">2026 MLB</div><div class="editorial-world-title">World Series</div>
-    <div class="world-entry">AL Champion &middot; {league_champion("AL")}</div>
+    <div class="world-entry">AL Champion{logo_html(al_champion, "matchup-logo") if al_champion != "TBD" else " &middot; TBD"}</div>
     <div class="world-entry">NL Champion{logo_html(nl_champion, "matchup-logo") if nl_champion != "TBD" else " &middot; TBD"}</div>
     </section>'''
     return f'''<div class="editorial-bracket"><div class="editorial-tree">
