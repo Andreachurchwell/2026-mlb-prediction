@@ -2219,7 +2219,7 @@ if page == "Home":
         <p>The regular season is complete. October Shift is frozen at its September 27 baseline, preserving its final view of the 12 teams entering October.</p>
         <div class="note">The October Shift Score is a relative contender rating, not a World Series probability.</div></div>''')
     st.html('<div class="section">2026 Postseason Bracket</div>')
-    st.html('<div class="playoff-intro">The actual starting field and fixed MLB advancement paths. Future rounds remain empty until postseason results are recorded.</div>')
+    # st.html('<div class="playoff-intro">The actual starting field and fixed MLB advancement paths. Future rounds remain empty until postseason results are recorded.</div>')
     render_playoff_field(board)
 
 elif page == "Regular Season Final":
